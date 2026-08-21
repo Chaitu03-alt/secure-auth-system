@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+*.pem
+*.key
+
+# Generated files
+static/generated_qr/
+*.log
+
+# Local installers / archives
+*.msi
+*.zip
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/

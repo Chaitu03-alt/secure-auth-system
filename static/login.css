@@ -1,0 +1,25 @@
+/* Login page specific styles */
+.auth-page { min-height: 100vh; display: flex; flex-direction: column; }
+.auth-container{ display:flex; align-items:center; justify-content:center; padding:2.5rem 0 }
+.auth-card{ display:flex; gap:2rem; align-items:stretch; background: var(--card-bg); padding:1.25rem; border-radius:14px; box-shadow: var(--card-shadow) }
+.auth-card .auth-left{ padding:1.25rem 1.5rem; max-width:520px }
+.auth-card .auth-right{ display:flex; align-items:center; justify-content:center; padding:1rem }
+.auth-card .illustration{ width:320px; height:auto; border-radius:12px }
+.auth-card h1{ font-size:1.6rem; margin-bottom:0.25rem }
+.auth-card .lead{ color: var(--muted); margin-bottom:1rem }
+.auth-form{ display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem }
+.auth-form label{ font-size:0.9rem; color: var(--nav-link) }
+.auth-form input{ padding:0.75rem 0.9rem; border-radius:10px; border:1px solid var(--outline); background: var(--toggle-bg); color: var(--text); font-size:0.95rem }
+.auth-row{ display:flex; justify-content:space-between; align-items:center; margin:0.5rem 0 }
+.checkbox input{ margin-right:0.5rem }
+.link-muted{ color: var(--subtle); text-decoration:none }
+.muted{ color: var(--subtle); margin-top:0.75rem }
+
+/* smaller screens */
+@media (max-width:900px){ .auth-card{ flex-direction:column; align-items:center } .auth-card .illustration{ width:260px } .auth-left{ text-align:center } }
+
+@media (max-width:480px){ .auth-card .illustration{ display:none } .auth-card{ padding:1rem } }
+
+/* focus states */
+.auth-form input:focus{ outline:3px solid rgba(59,130,246,0.08); outline-offset:2px; border-color:rgba(59,130,246,0.25) }
+    

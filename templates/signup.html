@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create account — MyProject</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='signup.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="auth-page">
+    <nav class="navbar" aria-label="Main">
+        <div class="container nav-inner">
+            <a class="brand-link" href="/">MyProject</a>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/login" class="btn btn-ghost">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container auth-container">
+        <div class="auth-card auth-card--alt">
+            <div class="auth-left">
+                <h1>Create your account</h1>
+                <p class="lead">Join MyProject and start collaborating with your team today.</p>
+
+                <form class="auth-form" action="/createuser" method="POST" aria-label="Sign up form">
+                    <label for="name">Full name</label>
+                    <input id="name" name="name" type="text" required autocomplete="name">
+
+                    <label for="username">Username</label>
+                    <input id="username" name="username" type="text" required autocomplete="username">
+
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" required autocomplete="email">
+
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" required autocomplete="new-password">
+
+                    <label for="confirm_password">Confirm Password</label>
+                    <input id="confirm_password" name="confirm_password" type="password" required autocomplete="new-password">
+
+                    <button type="submit" class="btn btn-primary btn-xl">Create account</button>
+                    {% if msg %}
+                        <p style="color: green;"> {{ msg }}</p>
+                    {% endif %}
+                </form>
+
+                <p class="muted">Already have an account? <a href="/login">Sign in</a></p>
+            </div>
+
+            <div class="auth-right" aria-hidden="true">
+                <svg viewBox="0 0 600 400" class="illustration" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="lg2" x1="0" x2="1">
+                            <stop offset="0%" stop-color="#FFD36D"/>
+                            <stop offset="100%" stop-color="#FF61A6"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Background gradient -->
+                    <rect x="0" y="0" width="600" height="400" rx="18" fill="url(#lg2)" opacity="0.95"/>
+                    
+                    <!-- Sky clouds -->
+                    <circle cx="110" cy="55" r="38" fill="rgba(255,255,255,0.2)"/>
+                    <circle cx="145" cy="65" r="30" fill="rgba(255,255,255,0.17)"/>
+                    <circle cx="470" cy="45" r="42" fill="rgba(255,255,255,0.14)"/>
+                    
+                    <!-- Ground -->
+                    <ellipse cx="300" cy="340" rx="250" ry="50" fill="rgba(100,80,0,0.12)"/>
+                    
+                    <!-- Left tree trunk -->
+                    <rect x="80" y="200" width="25" height="120" fill="#8B6F47" rx="5"/>
+                    <!-- Left tree foliage -->
+                    <circle cx="92" cy="175" r="55" fill="#228B22"/>
+                    <circle cx="60" cy="200" r="40" fill="#2E8B57"/>
+                    <circle cx="125" cy="195" r="48" fill="#32CD32"/>
+                    <circle cx="92" cy="220" r="35" fill="#2E8B57"/>
+                    
+                    <!-- Middle tree trunk -->
+                    <rect x="280" y="170" width="40" height="150" fill="#8B7355" rx="6"/>
+                    <!-- Middle tree foliage -->
+                    <circle cx="300" cy="140" r="65" fill="#228B22"/>
+                    <circle cx="260" cy="170" r="48" fill="#2E8B57"/>
+                    <circle cx="340" cy="165" r="55" fill="#228B22"/>
+                    <circle cx="300" cy="195" r="42" fill="#32CD32"/>
+                    
+                    <!-- Right tree trunk -->
+                    <rect x="450" y="210" width="22" height="110" fill="#A0826D" rx="4"/>
+                    <!-- Right tree foliage -->
+                    <circle cx="461" cy="185" r="50" fill="#228B22"/>
+                    <circle cx="435" cy="205" r="38" fill="#2E8B57"/>
+                    <circle cx="490" cy="200" r="43" fill="#32CD32"/>
+                    
+                    <!-- Flowers and nature -->
+                    <circle cx="160" cy="280" r="4" fill="#FF69B4"/>
+                    <circle cx="210" cy="290" r="4" fill="#FFB6C1"/>
+                    <circle cx="410" cy="285" r="4" fill="#FF1493"/>
+                    <circle cx="490" cy="295" r="4" fill="#FFB6C1"/>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>© <span id="year"></span> MyProject</div>
+            <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a></div>
+        </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

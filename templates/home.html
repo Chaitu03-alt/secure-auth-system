@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Login page</title>
+    <link rel="stylesheet" href="static/home.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>MyProject — Home</title>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+        <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    </head>
+    <body>
+        <nav class="navbar" role="navigation" aria-label="Main Navigation">
+            <div class="container nav-inner">
+                <div class="brand">
+                    <a href="/" class="brand-link">MyProject</a>
+                </div>
+
+                <div class="nav-center">
+                    <a href="#about" class="nav-item">About</a>
+                    <a href="#features" class="nav-item">Features</a>
+                    <a href="#contact" class="nav-item">Contact</a>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                    <a href="/login" class="btn btn-ghost">Login</a>
+                    <a href="/signup" class="btn btn-primary">Sign Up</a>
+                </div>
+            </div>
+        </nav>
+
+        <header class="hero">
+            <div class="container hero-inner">
+                <div class="hero-copy">
+                    <h1>Build faster, ship smarter.</h1>
+                    <p class="lead">MyProject helps teams collaborate, prototype, and deliver beautiful web experiences quickly.</p>
+                    <div class="hero-ctas">
+                        <a href="/signup" class="btn btn-xl btn-primary">Get Started — Free</a>
+                        <a href="#features" class="btn btn-xl btn-outline">See Features</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container main">
+            <section id="features" class="section features" aria-labelledby="features-heading">
+                <h2 id="features-heading">What you can do</h2>
+                <p class="section-sub">Small, focused features that help your team move faster.</p>
+
+                <div class="cards">
+                    <article class="card">
+                        <h3>Realtime Collaboration</h3>
+                        <p>Work together in real-time with shared workspaces and live updates.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Easy Prototyping</h3>
+                        <p>Launch prototypes quickly using prebuilt components and templates.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Secure by Default</h3>
+                        <p>Modern auth, role-based access, and secure defaults to protect your data.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section id="about" class="section about" aria-labelledby="about-heading">
+                <h2 id="about-heading">About MyProject</h2>
+                <p>MyProject is a lightweight platform designed to help small teams prototype, test, and ship web apps with confidence. Focus on ideas; we handle the scaffolding.</p>
+                <p class="about-credit">Made by <strong>Chaitanya Raut</strong></p>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <div class="container footer-inner">
+                <div>© <span id="year"></span> MyProject</div>
+                <div class="footer-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                </div>
+            </div>
+        </footer>
+
+        <script>
+            // simple year auto-fill
+            document.getElementById('year').textContent = new Date().getFullYear();
+        </script>
+    </body>
+    </html>

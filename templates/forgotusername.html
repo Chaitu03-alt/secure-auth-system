@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forgot Username</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='forgot.css') }}">
+</head>
+<body>
+    <div class="box">
+        <h2>Forgot Username</h2>
+
+        {% if msg %}
+            <p class="msg error">{{ msg }}</p>
+        {% endif %}
+
+        {% if username %}
+            <p class="msg success">
+                Your username is: <strong>{{ username }}</strong>
+            </p>
+        {% endif %}
+
+        <form method="POST" action="/forgot-username">
+            <label for="email">Registered Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+            <button type="submit">Get Username</button>
+        </form>
+
+        <div class="links">
+            <a href="{{ url_for('login') }}">Back to Login</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login — MyProject</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="auth-page">
+    <nav class="navbar" aria-label="Main">
+        <div class="container nav-inner">
+            <a class="brand-link" href="/">MyProject</a>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/signup" class="btn btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-left">
+                <h1>Welcome back</h1>
+                <p class="lead">Sign in to continue to your dashboard and projects.</p>
+
+                <form class="auth-form" action="/loginsubmit" method="POST" aria-label="Login form">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" type="text" required autocomplete="username">
+
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" required autocomplete="current-password">
+
+                    <div class="auth-row">
+                        <label class="checkbox">
+                            <input type="checkbox" name="remember"> Remember me
+                        </label>
+                        <a class="link-muted" href="/forgotusername">Forgot Username</a>
+                        <a class="link-muted" href="/forgotpassword">Forgot Password</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-xl">Sign In</button>
+
+                    {% if msg %}
+                        <p style="color :red">{{ msg }}</p>
+                    {% endif %}
+                </form>
+
+                <p class="muted">Don't have an account? <a href="/signup">Create one</a></p>
+            </div>
+
+            <div class="auth-right" aria-hidden="true">
+                <svg viewBox="0 0 600 400" class="illustration" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="lg" x1="0" x2="1">
+                            <stop offset="0%" stop-color="#6DD3FF"/>
+                            <stop offset="100%" stop-color="#7B61FF"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Background gradient -->
+                    <rect x="0" y="0" width="600" height="400" rx="18" fill="url(#lg)" opacity="0.95"/>
+                    
+                    <!-- Sky clouds -->
+                    <circle cx="100" cy="60" r="35" fill="rgba(255,255,255,0.18)"/>
+                    <circle cx="130" cy="70" r="28" fill="rgba(255,255,255,0.15)"/>
+                    <circle cx="480" cy="50" r="40" fill="rgba(255,255,255,0.12)"/>
+                    
+                    <!-- Ground -->
+                    <ellipse cx="300" cy="340" rx="250" ry="50" fill="rgba(0,100,0,0.15)"/>
+                    
+                    <!-- Left tree trunk -->
+                    <rect x="80" y="200" width="25" height="120" fill="#8B6F47" rx="5"/>
+                    <!-- Left tree foliage -->
+                    <circle cx="92" cy="175" r="55" fill="#228B22"/>
+                    <circle cx="60" cy="200" r="40" fill="#2E8B57"/>
+                    <circle cx="125" cy="195" r="48" fill="#32CD32"/>
+                    <circle cx="92" cy="220" r="35" fill="#2E8B57"/>
+                    
+                    <!-- Middle tree trunk -->
+                    <rect x="280" y="170" width="40" height="150" fill="#8B7355" rx="6"/>
+                    <!-- Middle tree foliage -->
+                    <circle cx="300" cy="140" r="65" fill="#228B22"/>
+                    <circle cx="260" cy="170" r="48" fill="#2E8B57"/>
+                    <circle cx="340" cy="165" r="55" fill="#228B22"/>
+                    <circle cx="300" cy="195" r="42" fill="#32CD32"/>
+                    
+                    <!-- Right tree trunk -->
+                    <rect x="450" y="210" width="22" height="110" fill="#A0826D" rx="4"/>
+                    <!-- Right tree foliage -->
+                    <circle cx="461" cy="185" r="50" fill="#228B22"/>
+                    <circle cx="435" cy="205" r="38" fill="#2E8B57"/>
+                    <circle cx="490" cy="200" r="43" fill="#32CD32"/>
+                    
+                    <!-- Flowers and shrubs -->
+                    <circle cx="150" cy="280" r="4" fill="#FF69B4"/>
+                    <circle cx="200" cy="290" r="4" fill="#FFB6C1"/>
+                    <circle cx="400" cy="285" r="4" fill="#FF1493"/>
+                    <circle cx="480" cy="295" r="4" fill="#FFB6C1"/>
+                </svg>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>© <span id="year"></span> MyProject</div>
+            <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a></div>
+        </div>
+    </footer>
+
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

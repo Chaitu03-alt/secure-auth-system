@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recover Username — secure-auth-system</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="auth-page">
+    <nav class="navbar" aria-label="Main">
+        <div class="container nav-inner">
+            <a class="brand-link" href="/">secure-auth-system</a>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/login" class="btn btn-ghost">Sign In</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container auth-container">
+        <div class="auth-card" style="max-width: 560px; margin: 30px auto; padding: 2.5rem 2rem;">
+            <div class="auth-left" style="max-width: 100%; width: 100%;">
+                <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Forgot your username?</h1>
+                <p class="lead" style="color: var(--muted); margin-bottom: 1.5rem;">
+                    Enter the email address registered with your account and we will retrieve your username.
+                </p>
+
+                {% if msg %}
+                    <div class="alert alert-danger">
+                        {{ msg }}
+                    </div>
+                {% endif %}
+
+                {% if username %}
+                    <div class="alert alert-success">
+                        <p style="font-size: 0.9rem; margin-bottom: 0.25rem;">Account found:</p>
+                        <p style="font-size: 1.2rem; font-weight: 700; color: #16a34a;">
+                            Username: <code>{{ username }}</code>
+                        </p>
+                    </div>
+                {% endif %}
+
+                <form class="auth-form" method="POST" action="/forgot-username" aria-label="Recover username form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <label for="email" style="font-weight: 500;">Registered Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="name@example.com" required autocomplete="email" autofocus>
+
+                    <button type="submit" class="btn btn-primary btn-xl" style="margin-top: 0.5rem;">
+                        Find My Username
+                    </button>
+                </form>
+
+                <div style="margin-top: 1.5rem; text-align: center; border-top: 1px solid var(--outline); padding-top: 1rem;">
+                    <a href="/login" class="link-muted" style="font-size: 0.9rem; text-decoration: underline;">
+                        ← Remembered your credentials? Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

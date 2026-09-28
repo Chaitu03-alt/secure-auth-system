@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>secure-auth-system — Modern Multi-Factor Authentication</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <div class="container nav-inner">
+            <div class="brand">
+                <a href="/" class="brand-link">secure-auth-system</a>
+            </div>
+
+            <div class="nav-center">
+                <a href="#features" class="nav-item">Features</a>
+                <a href="#architecture" class="nav-item">Architecture</a>
+                <a href="#about" class="nav-item">About</a>
+            </div>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                {% if session.get('user') %}
+                    <a href="/dashboard" class="btn btn-ghost">Dashboard</a>
+                    <a href="/logout" class="btn btn-primary">Sign Out</a>
+                {% else %}
+                    <a href="/login" class="btn btn-ghost">Sign In</a>
+                    <a href="/signup" class="btn btn-primary">Get Started</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container hero-inner">
+            <div class="hero-copy">
+                <h1>Authentication built for trust and peace of mind.</h1>
+                <p class="lead">
+                    A thoughtfully engineered authentication engine featuring Time-Based One-Time Passwords (TOTP), session-staged verification, granular rate limiting, and end-to-end CSRF defense.
+                </p>
+                <div class="hero-ctas">
+                    {% if session.get('user') %}
+                        <a href="/dashboard" class="btn btn-xl btn-primary">Go to Your Dashboard</a>
+                    {% else %}
+                        <a href="/signup" class="btn btn-xl btn-primary">Create Your Account</a>
+                        <a href="/login" class="btn btn-xl btn-outline">Sign In to Existing Account</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main">
+        <section id="features" class="section features" aria-labelledby="features-heading">
+            <h2 id="features-heading">Engineered for security, designed for humans</h2>
+            <p class="section-sub">Essential layers of protection working silently behind every interaction.</p>
+
+            <div class="cards">
+                <article class="card">
+                    <h3>Multi-Factor Authentication (2FA)</h3>
+                    <p>RFC 6238 compliant TOTP generator compatible with Google Authenticator, Authy, and 1Password.</p>
+                </article>
+                <article class="card">
+                    <h3>Smart Throttling & Limiting</h3>
+                    <p>Sliding-window IP rate limiting prevents credential stuffing and automated brute-force attacks gracefully.</p>
+                </article>
+                <article class="card">
+                    <h3>Timing-Safe Cryptography</h3>
+                    <p>High-entropy Bcrypt password hashing with constant-time dummy comparisons to eliminate username enumeration.</p>
+                </article>
+                <article class="card">
+                    <h3>CSRF Protected Forms</h3>
+                    <p>Cryptographic tokens bound to every user session ensure state-changing requests cannot be forged.</p>
+                </article>
+                <article class="card">
+                    <h3>Audit Event Trail</h3>
+                    <p>Comprehensive login history tracking client IPs and status timestamps for complete operational visibility.</p>
+                </article>
+                <article class="card">
+                    <h3>Dark Mode & Fluid UI</h3>
+                    <p>Clean, human-centered responsive interface designed for readability across mobile, tablet, and desktop.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="about" class="section about" aria-labelledby="about-heading">
+            <h2 id="about-heading">About secure-auth-system</h2>
+            <p>
+                secure-auth-system is designed to demonstrate defense-in-depth security principles in modern web applications. Every layer—from database constraints to session state machines—is hardened with care and tested thoroughly.
+            </p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>© <span id="year"></span> secure-auth-system. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="/login">Sign In</a>
+                <a href="/signup">Register</a>
+                <a href="#features">Features</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

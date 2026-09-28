@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Two-Factor Authentication — secure-auth-system</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="auth-page">
+    <nav class="navbar" aria-label="Main">
+        <div class="container nav-inner">
+            <a class="brand-link" href="/">secure-auth-system</a>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/login" class="btn btn-ghost">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container auth-container">
+        <div class="auth-card">
+            <div class="auth-left">
+                <h1>Verify TOTP</h1>
+                <p class="lead">Two-Factor Authentication (Step 2 of 2)</p>
+                <p class="muted">Verifying identity for: <strong>{{ username }}</strong></p>
+
+                <form class="auth-form" action="/verify-otp" method="POST" aria-label="TOTP verification form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="username" value="{{ username }}">
+
+                    <label for="otp">Authenticator 6-Digit Code</label>
+                    <input id="otp" name="otp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8" placeholder="e.g. 123456" required autocomplete="one-time-code" autofocus>
+
+                    <button type="submit" class="btn btn-primary btn-xl">Verify & Authenticate</button>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert {% if category == 'success' %}alert-success{% elif category == 'warning' %}alert-warning{% else %}alert-danger{% endif %}">
+                            {{ message }}
+                          </div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+
+                    {% if msg %}
+                        <div class="alert alert-danger">
+                            {{ msg }}
+                        </div>
+                    {% endif %}
+                </form>
+
+                <p class="muted"><a href="/login">Cancel and Return to Sign In</a></p>
+            </div>
+
+            <div class="auth-right" aria-hidden="true">
+                <svg viewBox="0 0 600 400" class="illustration" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="lg-totp2" x1="0" x2="1">
+                            <stop offset="0%" stop-color="#4F46E5"/>
+                            <stop offset="100%" stop-color="#06B6D4"/>
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="0" width="600" height="400" rx="18" fill="url(#lg-totp2)" opacity="0.95"/>
+                    <circle cx="300" cy="160" r="70" fill="rgba(255,255,255,0.15)"/>
+                    <circle cx="300" cy="160" r="50" fill="rgba(255,255,255,0.25)"/>
+                    <path d="M300 130 L325 142 V165 C325 185 300 195 300 195 C300 195 275 185 275 165 V142 Z" fill="#ffffff" opacity="0.9"/>
+                    <text x="300" y="270" font-family="'Poppins', sans-serif" font-size="20" font-weight="600" fill="#ffffff" text-anchor="middle">Time-Based One-Time Password</text>
+                    <text x="300" y="295" font-family="'Poppins', sans-serif" font-size="14" fill="rgba(255,255,255,0.8)" text-anchor="middle">RFC 6238 Compliant TOTP Verification</text>
+                </svg>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

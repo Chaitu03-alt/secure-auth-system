@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — secure-auth-system</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='newhomepage.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body>
+    <nav class="navbar" role="navigation" aria-label="Main Navigation">
+        <div class="container nav-inner">
+            <div class="brand">
+                <a href="/" class="brand-link">secure-auth-system</a>
+            </div>
+
+            <div class="nav-center">
+                <a href="/dashboard" class="nav-item">Dashboard</a>
+                <a href="/showqr/{{ user }}" class="nav-item">2FA Keys</a>
+            </div>
+
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/logout" class="btn btn-primary">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container main dashboard-hero">
+        <div class="welcome-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Authenticated Session Active
+        </div>
+
+        <h1 style="font-size: 2.2rem; margin-bottom: 0.5rem;">Welcome, {{ user }} 👋</h1>
+        <p class="lead" style="margin-bottom: 2rem;">
+            Your account is fully authenticated and protected by multi-factor authentication (TOTP) and session-staged verification.
+        </p>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Two-Factor Authentication</div>
+                <div class="stat-value" style="color: #16a34a; display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="status-badge success">Enforced</span>
+                </div>
+                <div class="stat-hint">Google Authenticator / RFC 6238</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Connected Network IP</div>
+                <div class="stat-value" style="font-size: 1.25rem;">{{ client_ip or "127.0.0.1" }}</div>
+                <div class="stat-hint">Rate-limited & protected from stuffing</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Session Protection</div>
+                <div class="stat-value" style="font-size: 1.25rem;">HttpOnly + CSRF</div>
+                <div class="stat-hint">Cross-site request forgery immune</div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Audit Logs -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Recent Authentication Events</h2>
+                <span class="stat-hint">Tracked via login_logs audit trail</span>
+            </div>
+
+            {% if audit_logs %}
+            <div style="overflow-x: auto;">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th>Time (UTC)</th>
+                            <th>Client IP</th>
+                            <th>Event Status</th>
+                            <th>Security Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in audit_logs %}
+                        <tr>
+                            <td>{{ log.login_time }}</td>
+                            <td><code>{{ log.ip_address }}</code></td>
+                            <td>
+                                {% if log.status == 'SUCCESS' %}
+                                    <span class="status-badge success">Verified (2FA)</span>
+                                {% elif log.status == 'STAGE1_SUCCESS' %}
+                                    <span class="status-badge pending">Stage 1 Pass</span>
+                                {% elif log.status == 'OTP_FAILED' %}
+                                    <span class="status-badge failed">OTP Failed</span>
+                                {% else %}
+                                    <span class="status-badge failed">{{ log.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>Automated Verification</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: var(--muted); padding: 1rem 0;">
+                No recent security anomalies recorded. Your account is in good standing.
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Account & Security Actions</h2>
+            </div>
+            <p style="color: var(--muted); margin-bottom: 1rem;">
+                Need to reconfigure your authenticator app or update security credentials?
+            </p>
+            <div class="quick-actions">
+                <a href="/showqr/{{ user }}" class="btn btn-outline">View / Re-scan 2FA QR Code</a>
+                <a href="/forgotpassword" class="btn btn-ghost">Reset Password</a>
+                <a href="/logout" class="btn btn-primary">Sign Out of Session</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <div>© <span id="year"></span> secure-auth-system. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/logout">Sign Out</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

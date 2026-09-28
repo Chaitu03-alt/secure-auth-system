@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ error_title or "Security Notice" }} — secure-auth-system</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="auth-page">
+    <nav class="navbar" aria-label="Main">
+        <div class="container nav-inner">
+            <a class="brand-link" href="/">secure-auth-system</a>
+            <div class="nav-actions">
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+                <a href="/login" class="btn btn-primary">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container auth-container">
+        <div class="auth-card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 40px 30px;">
+            <div style="width: 100%;">
+                <div style="margin-bottom: 20px;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h1 style="font-size: 26px; margin-bottom: 12px;">{{ error_title or "Request Blocked" }}</h1>
+                <p class="lead" style="color: var(--text-muted, #64748b); font-size: 16px; margin-bottom: 24px;">
+                    {{ error_message or "An unexpected security condition occurred. Please retry your request." }}
+                </p>
+
+                {% if retry_after %}
+                <p style="background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 10px 16px; border-radius: 8px; font-weight: 500; margin-bottom: 24px;">
+                    {{ retry_after }}
+                </p>
+                {% endif %}
+
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-xl">Return to Sign In</a>
+                    <a href="/" class="btn btn-outline btn-xl">Go Home</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

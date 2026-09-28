@@ -1,0 +1,10 @@
+Set-Content .gitignore @"
+.venv/
+__pycache__/
+.env
+*.msi
+*.zip
+.DS_Store
+intership/
+static/qr_*.png
+"@

@@ -1,5 +1,8 @@
 # secure-auth-system
 
+[![CI Pipeline](https://github.com/Chaitu03-alt/secure-auth-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Chaitu03-alt/secure-auth-system/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A production-hardened Python authentication service built with Flask, MySQL, and modern application security (AppSec) defense-in-depth principles. Features multi-factor authentication (MFA/2FA via RFC 6238 TOTP), Cross-Site Request Forgery (CSRF) protection, endpoint-level rate limiting, constant-time credential verification, anti-enumeration defenses, and comprehensive audit logging.
 
 ---

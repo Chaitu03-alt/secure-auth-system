@@ -458,8 +458,8 @@ def loginsubmit():
         )
 
 
-@app.route("/verify-otp", methods=["GET", "POST"])
 @app.route("/totp", methods=["GET", "POST"])
+@app.route("/verify-otp", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def verify_otp():
     """
@@ -547,8 +547,8 @@ def verify_otp():
     )
 
 
-@app.route("/dashboard")
 @app.route("/NewHome")
+@app.route("/dashboard")
 def dashboard():
     """
     Protected user dashboard requiring an active authenticated session.

@@ -1,4 +1,3 @@
-Set-Content .gitignore @"
 .venv/
 __pycache__/
 .env
@@ -7,4 +6,4 @@ __pycache__/
 .DS_Store
 intership/
 static/qr_*.png
-"@
+static/qrcodes/

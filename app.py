@@ -424,7 +424,7 @@ def loginsubmit():
 @app.route("/verify-otp", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def verify_otp():
-    """Two-Factor Authentication (TOTP) endpoint with 3-attempt brute-force lock."""
+    """Two-Factor Authentication (TOTP) endpoint with server-side 3-strike lock and anti-replay."""
     pending_id = session.get("pending_user_id")
     pending_user = session.get("pending_user")
 
@@ -432,48 +432,105 @@ def verify_otp():
         flash("Please enter your username and password first to access Two-Factor Verification.", "warning")
         return redirect(url_for("login"))
 
+    user = None
+    try:
+        with db_cursor() as cur:
+            cur.execute(
+                "SELECT id, username, totp_secret, session_version, last_totp_timestep, failed_attempts, locked_until "
+                "FROM users WHERE id = %s",
+                (pending_id,),
+            )
+            user = cur.fetchone()
+    except Exception as err:
+        logger.error("DB error during OTP verify: %s", err)
+
+    if not user:
+        session.clear()
+        return redirect(url_for("login"))
+
+    now = datetime.utcnow()
+    # Check if account is locked server-side
+    locked_until = user.get("locked_until")
+    if locked_until:
+        if isinstance(locked_until, str):
+            try:
+                locked_until = datetime.fromisoformat(locked_until)
+            except Exception:
+                locked_until = None
+        if locked_until and locked_until > now:
+            session.clear()
+            flash("Account is temporarily locked due to excessive failed attempts. Please try again in 5 minutes.", "danger")
+            return redirect(url_for("login"))
+
     if request.method == "GET":
         return render_template("verify_otp.html", username=pending_user)
 
     client_ip = get_client_ip()
     otp = request.form.get("otp", "").strip()
 
-    user = None
-    try:
-        with db_cursor() as cur:
-            cur.execute("SELECT id, username, totp_secret, session_version FROM users WHERE id = %s", (pending_id,))
-            user = cur.fetchone()
-    except Exception as err:
-        logger.error("DB error during OTP verify: %s", err)
+    raw_secret = decrypt_totp_secret(user["totp_secret"]) if user.get("totp_secret") else None
+    if raw_secret:
+        totp_obj = pyotp.TOTP(raw_secret)
+        current_timestep = totp_obj.timecode(now)
+        if totp_obj.verify(otp, valid_window=1):
+            # Anti-replay: verify timestep has not already been used
+            last_ts = user.get("last_totp_timestep")
+            if last_ts is not None and last_ts >= current_timestep:
+                log_login_event(user["id"], client_ip, "OTP_REPLAY_REJECTED")
+                return render_template(
+                    "verify_otp.html",
+                    username=pending_user,
+                    msg="This verification code has already been used. Please wait for the next 30-second token on your authenticator app.",
+                )
 
-    raw_secret = decrypt_totp_secret(user["totp_secret"]) if user else None
-    if user and raw_secret and pyotp.TOTP(raw_secret).verify(otp, valid_window=1):
-        session.clear()
-        session.permanent = True
-        session["user_id"] = user["id"]
-        session["user"] = user["username"]
-        session["session_version"] = user.get("session_version", 1)
+            # Success: reset failed attempts, record consumed timestep, promote session
+            try:
+                with db_cursor(commit=True) as cur:
+                    cur.execute(
+                        "UPDATE users SET is_totp_enabled = TRUE, last_totp_timestep = %s, failed_attempts = 0, locked_until = NULL WHERE id = %s",
+                        (current_timestep, user["id"]),
+                    )
+            except Exception as exc:
+                logger.warning("Could not update TOTP state on success: %s", exc)
 
+            session.clear()
+            session.permanent = True
+            session["user_id"] = user["id"]
+            session["user"] = user["username"]
+            session["session_version"] = user.get("session_version", 1)
+
+            log_login_event(user["id"], client_ip, "SUCCESS")
+            flash(f"Welcome back, {user['username']}! You have signed in securely.", "success")
+            return redirect(url_for("dashboard"))
+
+    # Invalid OTP Handling with server-side attempt tracking
+    log_login_event(pending_id, client_ip, "OTP_FAILED")
+    new_failed = (user.get("failed_attempts") or 0) + 1
+
+    if new_failed >= 3:
+        lock_until = now + timedelta(minutes=5)
         try:
             with db_cursor(commit=True) as cur:
-                cur.execute("UPDATE users SET is_totp_enabled = TRUE WHERE id = %s", (user["id"],))
-        except Exception as exc:
-            logger.warning("Could not update is_totp_enabled: %s", exc)
-
-        log_login_event(user["id"], client_ip, "SUCCESS")
-        flash(f"Welcome back, {user['username']}! You have signed in securely.", "success")
-        return redirect(url_for("dashboard"))
-
-    log_login_event(pending_id, client_ip, "OTP_FAILED")
-    attempts = session.get("otp_attempts", 0) + 1
-    session["otp_attempts"] = attempts
-
-    if attempts >= 3:
+                cur.execute(
+                    "UPDATE users SET failed_attempts = %s, locked_until = %s WHERE id = %s",
+                    (new_failed, lock_until, user["id"]),
+                )
+        except Exception as err:
+            logger.error("DB error updating lock state: %s", err)
         session.clear()
         flash("Maximum verification attempts exceeded. For your protection, please sign in again.", "danger")
         return redirect(url_for("login"))
 
-    rem = 3 - attempts
+    try:
+        with db_cursor(commit=True) as cur:
+            cur.execute(
+                "UPDATE users SET failed_attempts = %s WHERE id = %s",
+                (new_failed, user["id"]),
+            )
+    except Exception as err:
+        logger.error("DB error updating failed attempts: %s", err)
+
+    rem = 3 - new_failed
     return render_template(
         "verify_otp.html",
         username=pending_user,

@@ -102,6 +102,9 @@ def test_db(monkeypatch):
             totp_secret VARCHAR(255) NULL,
             is_totp_enabled BOOLEAN NOT NULL DEFAULT 0,
             session_version INTEGER NOT NULL DEFAULT 1,
+            last_totp_timestep INTEGER NULL,
+            failed_attempts INTEGER NOT NULL DEFAULT 0,
+            locked_until TIMESTAMP NULL DEFAULT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
     """)

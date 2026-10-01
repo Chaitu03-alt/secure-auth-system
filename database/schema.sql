@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS users (
     totp_secret VARCHAR(255) NULL,
     is_totp_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     session_version INT NOT NULL DEFAULT 1,
+    last_totp_timestep BIGINT NULL,
+    failed_attempts INT NOT NULL DEFAULT 0,
+    locked_until TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_users_username (username),
     INDEX idx_users_email (email)

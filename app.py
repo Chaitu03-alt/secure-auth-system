@@ -18,6 +18,7 @@ import os
 import re
 import secrets
 import smtplib
+import sys
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
@@ -42,16 +43,35 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("secure_auth")
 
+_is_testing = bool(os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("TESTING") or "pytest" in sys.modules)
+_secret_key = os.environ.get("SECRET_KEY", "").strip()
+
+if not _secret_key:
+    if not _is_testing:
+        raise RuntimeError("FATAL: Application startup aborted. SECRET_KEY must be provided via environment variable.")
+    _secret_key = "test-secret-key-for-unit-testing-32b"
+
+if len(_secret_key) < 32 and not _is_testing:
+    raise RuntimeError("FATAL: Application startup aborted. SECRET_KEY is too weak (must be at least 32 characters long).")
+
+if _secret_key in (
+    "secure-auth-system-dev-insecure-key-32bytes-min",
+    "dev_insecure_secret_key_generate_new_with_python_secrets_token_hex_32",
+) and not _is_testing:
+    raise RuntimeError("FATAL: Insecure placeholder SECRET_KEY detected from repository history. Please generate a new key.")
+
 app = Flask(__name__)
 app.config.update(
-    SECRET_KEY=os.environ.get("SECRET_KEY") or os.urandom(32).hex(),
+    SECRET_KEY=_secret_key,
     WTF_CSRF_ENABLED=True,
     WTF_CSRF_TIME_LIMIT=int(os.environ.get("CSRF_TIME_LIMIT", 3600)),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE=os.environ.get("SESSION_COOKIE_SAMESITE", "Lax"),
-    SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "False").lower() in ("true", "1"),
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "True").lower() in ("true", "1"),
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=int(os.environ.get("PERMANENT_SESSION_LIFETIME", 30))),
+    DEBUG=False,
 )
+app.debug = False
 
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -136,11 +156,14 @@ except ImportError:
 
 def get_db_connection():
     """Establish and return an active MySQL database connection."""
+    password = os.environ.get("DB_PASSWORD")
+    if password is None and not _is_testing:
+        raise RuntimeError("FATAL: DB_PASSWORD environment variable is required.")
     cfg = {
         "host": os.environ.get("DB_HOST", "localhost"),
         "port": int(os.environ.get("DB_PORT", 3306)),
         "user": os.environ.get("DB_USER", "root"),
-        "password": os.environ.get("DB_PASSWORD", ""),
+        "password": password or "",
         "database": os.environ.get("DB_NAME", "secure_auth_system"),
     }
     if HAS_PYMYSQL:

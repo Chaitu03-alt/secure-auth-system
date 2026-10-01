@@ -248,15 +248,21 @@ def get_client_ip() -> str:
 
 
 def hash_password(password: str) -> str:
-    """Hash plaintext password with bcrypt (work factor 12)."""
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(12)).decode("utf-8")
+    """Hash plaintext password with bcrypt (work factor 12). Rejects passwords exceeding 72 bytes."""
+    pw_bytes = password.encode("utf-8")
+    if len(pw_bytes) > 72:
+        raise ValueError("Password cannot exceed 72 bytes.")
+    return bcrypt.hashpw(pw_bytes, bcrypt.gensalt(12)).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password using constant-time comparison with fallback for legacy hashes."""
     try:
+        pw_bytes = plain_password.encode("utf-8")
+        if len(pw_bytes) > 72:
+            return False
         if hashed_password.startswith(("$2a$", "$2b$", "$2y$")):
-            return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+            return bcrypt.checkpw(pw_bytes, hashed_password.encode("utf-8"))
         return check_password_hash(hashed_password, plain_password)
     except Exception:
         return False
@@ -379,6 +385,8 @@ def create_user():
         return _reject("Passwords do not match. Please double-check and try again.")
     if len(passwd) < 8:
         return _reject("For your security, your password must be at least 8 characters long.")
+    if len(passwd.encode("utf-8")) > 72:
+        return _reject("Password must not exceed 72 bytes.")
 
     try:
         with db_cursor(commit=True) as cur:
@@ -625,23 +633,34 @@ def dashboard():
 @app.route("/forgotusername", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def forgot_username():
-    """Username recovery endpoint with anti-enumeration response."""
-    msg, found_user = "", None
+    """Username recovery endpoint with generic anti-enumeration response."""
+    msg = ""
     if request.method == "POST":
         email = request.form.get("email", "").strip()
-        try:
-            with db_cursor() as cur:
-                cur.execute("SELECT username FROM users WHERE email = %s", (email,))
-                user = cur.fetchone()
-                if user:
-                    found_user = user["username"]
-                else:
-                    msg = "If an account is associated with this email, your username will be displayed here."
-        except Exception as err:
-            logger.error("Forgot username error: %s", err)
-            msg = "An error occurred while processing your request. Please try again."
+        if email:
+            try:
+                with db_cursor() as cur:
+                    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
+                    user = cur.fetchone()
+                if user and IS_EMAIL_CONFIGURED:
+                    try:
+                        msg_text = MIMEText(
+                            f"Hello,\n\nYou requested your username for Secure Auth System. Your registered username is: {user['username']}\n\nIf you did not request this, please ignore this email."
+                        )
+                        msg_text["Subject"] = "Your Username — Secure Auth System"
+                        msg_text["From"] = EMAIL_FROM
+                        msg_text["To"] = email
+                        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                            server.starttls()
+                            server.login(SMTP_USER, SMTP_PASS)
+                            server.send_message(msg_text)
+                    except Exception as err:
+                        logger.error("Failed to send username recovery email: %s", err)
+            except Exception as err:
+                logger.error("Forgot username lookup error: %s", err)
+        msg = "If an account is associated with this email address, instructions have been sent."
 
-    return render_template("forgotusername.html", msg=msg, username=found_user)
+    return render_template("forgotusername.html", msg=msg)
 
 
 @app.route("/forgot-password", methods=["GET", "POST"])
@@ -725,6 +744,8 @@ def reset_password():
         confirm_pass = request.form.get("confirm_password", "")
         if len(new_pass) < 8:
             return render_template("reset_password.html", token=raw_token, msg="Password must be at least 8 characters long.")
+        if len(new_pass.encode("utf-8")) > 72:
+            return render_template("reset_password.html", token=raw_token, msg="Password must not exceed 72 bytes.")
         if new_pass != confirm_pass:
             return render_template("reset_password.html", token=raw_token, msg="Passwords do not match.")
 

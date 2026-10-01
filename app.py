@@ -10,11 +10,15 @@ Architectural Highlights:
 - Dynamic User Dashboard with Session Telemetry & Audit Logs
 """
 
+import hashlib
 import logging
 import os
 import re
+import secrets
+import smtplib
 from contextlib import contextmanager
-from datetime import timedelta
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
 
 import bcrypt
 from dotenv import load_dotenv
@@ -53,6 +57,35 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
 )
+
+SMTP_HOST = os.environ.get("SMTP_HOST") or os.environ.get("MAIL_SERVER")
+SMTP_PORT = int(os.environ.get("SMTP_PORT") or os.environ.get("MAIL_PORT", 587))
+SMTP_USER = os.environ.get("SMTP_USER") or os.environ.get("MAIL_USERNAME")
+SMTP_PASS = os.environ.get("SMTP_PASS") or os.environ.get("MAIL_PASSWORD")
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "noreply@secureauth.local")
+IS_EMAIL_CONFIGURED = bool(SMTP_HOST and SMTP_USER and SMTP_PASS)
+
+
+def send_reset_email(to_email, reset_link):
+    """Dispatch password reset token email via SMTP if configured."""
+    if not IS_EMAIL_CONFIGURED:
+        return False
+    try:
+        msg = MIMEText(
+            f"Hello,\n\nYou requested a password reset. Click the link below to set a new password:\n\n{reset_link}\n\nThis link is single-use and expires in 15 minutes.\n\nIf you did not make this request, please ignore this email."
+        )
+        msg["Subject"] = "Password Reset Request — Secure Auth System"
+        msg["From"] = EMAIL_FROM
+        msg["To"] = to_email
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+            server.starttls()
+            server.login(SMTP_USER, SMTP_PASS)
+            server.send_message(msg)
+        return True
+    except Exception as err:
+        logger.error("Failed to send reset email to %s: %s", to_email, err)
+        return False
+
 
 DUMMY_BCRYPT_HASH = "$2b$12$CwTycUXWue0Thq9StjUM0uJ2a3y5j3qF7A0kR.QnE6pS/uXmH1qOm"
 
@@ -462,32 +495,105 @@ def forgot_username():
 @app.route("/forgotpassword", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def forgot_password():
-    """Password reset endpoint with anti-enumeration protection."""
+    """Password reset request endpoint. Requires active outbound email service."""
+    if not IS_EMAIL_CONFIGURED:
+        return render_template(
+            "forgotpassword.html",
+            msg="Password reset is currently disabled because outbound email service is not configured on this server.",
+            disabled=True,
+        )
+
     msg, success = "", False
     if request.method == "POST":
-        usernm = request.form.get("username", "").strip()
-        new_pass = request.form.get("new_password", "")
-        if len(new_pass) < 8:
-            msg = "New password must be at least 8 characters long."
+        email_or_user = request.form.get("email_or_username", "").strip() or request.form.get("username", "").strip()
+        if not email_or_user:
+            msg = "Please provide your username or registered email."
         else:
             try:
-                with db_cursor(commit=True) as cur:
-                    cur.execute("SELECT id FROM users WHERE username = %s", (usernm,))
+                user = None
+                with db_cursor() as cur:
+                    cur.execute(
+                        "SELECT id, email, username FROM users WHERE username = %s OR email = %s",
+                        (email_or_user, email_or_user),
+                    )
                     user = cur.fetchone()
-                    if user:
-                        cur.execute(
-                            "UPDATE users SET password_hash = %s, session_version = session_version + 1 WHERE id = %s",
-                            (hash_password(new_pass), user["id"]),
-                        )
-                        flash("Your password has been successfully updated! You can now sign in.", "success")
-                        return redirect(url_for("login"))
-                verify_password(new_pass, DUMMY_BCRYPT_HASH)
-                msg = "If the account exists, the password has been updated."
-            except Exception as err:
-                logger.error("Password reset error: %s", err)
-                msg = "An error occurred while updating the password."
 
-    return render_template("forgotpassword.html", msg=msg, success=success)
+                if user and user.get("email"):
+                    raw_token = secrets.token_urlsafe(32)
+                    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+                    expires_at = datetime.utcnow() + timedelta(minutes=15)
+                    with db_cursor(commit=True) as cur:
+                        cur.execute(
+                            "INSERT INTO password_resets (user_id, token_hash, expires_at, used) VALUES (%s, %s, %s, FALSE)",
+                            (user["id"], token_hash, expires_at),
+                        )
+                    reset_link = url_for("reset_password", token=raw_token, _external=True)
+                    send_reset_email(user["email"], reset_link)
+
+                msg = "If an account matches that identifier, password reset instructions have been sent to the registered email."
+                success = True
+            except Exception as err:
+                logger.error("Password reset dispatch error: %s", err)
+                msg = "An error occurred while processing your request. Please try again later."
+
+    return render_template("forgotpassword.html", msg=msg, success=success, disabled=False)
+
+
+@app.route("/reset-password", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
+def reset_password():
+    """Signed, expiring, single-use password reset completion endpoint."""
+    raw_token = request.args.get("token", "").strip() or request.form.get("token", "").strip()
+    if not raw_token:
+        flash("Password reset token is missing.", "danger")
+        return redirect(url_for("forgot_password"))
+
+    token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+    reset_record = None
+    try:
+        with db_cursor() as cur:
+            cur.execute(
+                "SELECT pr.id, pr.user_id, pr.expires_at, pr.used, u.username "
+                "FROM password_resets pr JOIN users u ON pr.user_id = u.id "
+                "WHERE pr.token_hash = %s",
+                (token_hash,),
+            )
+            reset_record = cur.fetchone()
+    except Exception as err:
+        logger.error("DB error fetching reset token: %s", err)
+
+    now = datetime.utcnow()
+    if not reset_record or reset_record["used"] or reset_record["expires_at"] < now:
+        flash("This password reset link is invalid or has expired. Please request a new one.", "danger")
+        return redirect(url_for("forgot_password"))
+
+    if request.method == "POST":
+        new_pass = request.form.get("new_password", "")
+        confirm_pass = request.form.get("confirm_password", "")
+        if len(new_pass) < 8:
+            return render_template("reset_password.html", token=raw_token, msg="Password must be at least 8 characters long.")
+        if new_pass != confirm_pass:
+            return render_template("reset_password.html", token=raw_token, msg="Passwords do not match.")
+
+        try:
+            with db_cursor(commit=True) as cur:
+                # Update password and increment session_version to revoke active sessions
+                cur.execute(
+                    "UPDATE users SET password_hash = %s, session_version = session_version + 1 WHERE id = %s",
+                    (hash_password(new_pass), reset_record["user_id"]),
+                )
+                # Mark token as consumed (single-use)
+                cur.execute(
+                    "UPDATE password_resets SET used = TRUE WHERE id = %s",
+                    (reset_record["id"],),
+                )
+            flash("Your password has been successfully reset. Please sign in.", "success")
+            return redirect(url_for("login"))
+        except Exception as err:
+            logger.error("Password reset update error: %s", err)
+            return render_template("reset_password.html", token=raw_token, msg="An error occurred while updating password.")
+
+    return render_template("reset_password.html", token=raw_token, username=reset_record["username"])
 
 
 @app.route("/logout")

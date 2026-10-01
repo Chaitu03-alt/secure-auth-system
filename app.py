@@ -34,6 +34,13 @@ import pyotp
 import qrcode
 from werkzeug.security import check_password_hash
 
+try:
+    from werkzeug.serving import WSGIRequestHandler
+    WSGIRequestHandler.server_version = ""
+    WSGIRequestHandler.sys_version = ""
+except Exception:
+    pass
+
 # -----------------------------------------------------------------------------
 # Configuration & Application Bootstrap
 # -----------------------------------------------------------------------------
@@ -80,6 +87,29 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri=os.environ.get("RATELIMIT_STORAGE_URI", "memory://"),
 )
+
+
+@app.after_request
+def set_security_headers(response):
+    """Inject strict security headers and strip identifying server headers."""
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data:; "
+        "connect-src 'self'; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    response.headers.pop("Server", None)
+    return response
 
 SMTP_HOST = os.environ.get("SMTP_HOST") or os.environ.get("MAIL_SERVER")
 SMTP_PORT = int(os.environ.get("SMTP_PORT") or os.environ.get("MAIL_PORT", 587))

@@ -101,6 +101,7 @@ def test_db(monkeypatch):
             password_hash VARCHAR(255) NOT NULL,
             totp_secret VARCHAR(32) NULL,
             is_totp_enabled BOOLEAN NOT NULL DEFAULT 0,
+            session_version INTEGER NOT NULL DEFAULT 1,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
     """)

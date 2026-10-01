@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     totp_secret VARCHAR(32) NULL,
     is_totp_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    session_version INT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_users_username (username),
     INDEX idx_users_email (email)

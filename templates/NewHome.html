@@ -35,18 +35,19 @@
                 radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.06) 0px, transparent 40%);
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 
 <body
     class="min-h-screen mesh-gradient flex flex-col justify-between selection:bg-emerald-500/20 selection:text-emerald-400 font-sans antialiased">
 
-    <!-- Top Navigation -->
-    <header class="w-full border-b border-zinc-900 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-50">
+    <!-- Floating Pill Navbar -->
+    <header class="floating-navbar glass-nav sticky top-3 z-50">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
                 <a href="/dashboard" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
                     <span
-                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
+                        class="w-8 h-8 rounded-lg bg-zinc-900/80 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
                                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -57,9 +58,9 @@
                 </a>
                 <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-zinc-400">
                     <a href="/dashboard"
-                        class="px-3 py-1.5 rounded-md bg-zinc-900 text-zinc-100 border border-zinc-800">Dashboard</a>
+                        class="px-3 py-1.5 rounded-full bg-white/10 text-zinc-100 border border-white/10">Dashboard</a>
                     <a href="/showqr/{{ user }}"
-                        class="px-3 py-1.5 rounded-md hover:text-zinc-200 hover:bg-zinc-900/50 transition">2FA Keys</a>
+                        class="px-3 py-1.5 rounded-full hover:text-zinc-200 hover:bg-white/5 transition">2FA Keys</a>
                 </nav>
             </div>
 
@@ -113,7 +114,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             <!-- Card 1 -->
-            <div class="p-5 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+            <div class="p-5 rounded-xl glass-card stat-card flex flex-col justify-between">
                 <div class="flex items-center justify-between text-xs text-zinc-400 mb-3">
                     <span>MFA Status</span>
                     <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -122,12 +123,12 @@
                     <div class="text-xl font-bold tracking-tight text-emerald-400 flex items-center gap-2">
                         <span>Enforced</span>
                     </div>
-                    <div class="text-[11px] text-zinc-500 font-mono mt-1">RFC 6238 / PyOTP Hardware</div>
+                    <div class="text-[11px] text-zinc-400 font-mono mt-1">RFC 6238 / PyOTP Hardware</div>
                 </div>
             </div>
 
             <!-- Card 2 -->
-            <div class="p-5 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+            <div class="p-5 rounded-xl glass-card stat-card flex flex-col justify-between">
                 <div class="flex items-center justify-between text-xs text-zinc-400 mb-3">
                     <span>Client IP</span>
                     <span class="w-2 h-2 rounded-full bg-blue-400"></span>
@@ -136,12 +137,12 @@
                     <div class="text-xl font-bold font-mono tracking-tight text-zinc-100">
                         {{ client_ip or "127.0.0.1" }}
                     </div>
-                    <div class="text-[11px] text-zinc-500 font-mono mt-1">Rate-limited via Redis sliding-window</div>
+                    <div class="text-[11px] text-zinc-400 font-mono mt-1">Rate-limited via Redis sliding-window</div>
                 </div>
             </div>
 
             <!-- Card 3 -->
-            <div class="p-5 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+            <div class="p-5 rounded-xl glass-card stat-card flex flex-col justify-between">
                 <div class="flex items-center justify-between text-xs text-zinc-400 mb-3">
                     <span>Session Integrity</span>
                     <span class="w-2 h-2 rounded-full bg-purple-400"></span>
@@ -150,15 +151,15 @@
                     <div class="text-xl font-bold tracking-tight text-zinc-100">
                         HttpOnly + CSRF
                     </div>
-                    <div class="text-[11px] text-zinc-500 font-mono mt-1">Mitigating XSS & session hijacking</div>
+                    <div class="text-[11px] text-zinc-400 font-mono mt-1">Mitigating XSS & session hijacking</div>
                 </div>
             </div>
 
         </div>
 
         <!-- Audit Trail Log Table -->
-        <div class="rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-xl backdrop-blur-xl overflow-hidden">
-            <div class="p-6 border-b border-zinc-850 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div class="rounded-2xl glass-panel dashboard-panel shadow-2xl overflow-hidden p-0">
+            <div class="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                     <h2 class="text-base font-semibold text-zinc-100">Recent Authentication Events</h2>
                     <p class="text-xs text-zinc-400 mt-0.5">Tracked dynamically via immutable audit logging engine.</p>

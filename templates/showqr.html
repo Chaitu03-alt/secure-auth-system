@@ -35,17 +35,18 @@
                 radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 
 <body
     class="min-h-screen mesh-gradient flex flex-col justify-between selection:bg-emerald-500/20 selection:text-emerald-400 font-sans antialiased">
 
-    <!-- Top Minimal Navbar -->
-    <header class="w-full border-b border-zinc-900 bg-zinc-950/60 backdrop-blur-md sticky top-0 z-50">
+    <!-- Floating Pill Navbar -->
+    <header class="floating-navbar glass-nav sticky top-3 z-50">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <a href="/" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
                 <span
-                    class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
+                    class="w-8 h-8 rounded-lg bg-zinc-900/80 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -55,7 +56,7 @@
             </a>
             <div class="flex items-center gap-4 text-xs font-medium">
                 <a href="/login"
-                    class="px-3.5 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 hover:border-zinc-700 transition">
+                    class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:border-white/20 transition">
                     Sign in
                 </a>
             </div>
@@ -65,7 +66,7 @@
     <!-- Main Container -->
     <main class="flex-1 flex items-center justify-center px-4 py-12">
         <div
-            class="w-full max-w-lg rounded-2xl border border-zinc-800/80 bg-zinc-950/80 shadow-2xl backdrop-blur-xl p-8 sm:p-10 text-center">
+            class="w-full max-w-lg rounded-2xl glass-panel auth-card shadow-2xl p-8 sm:p-10 text-center">
 
             <!-- Icon & Header -->
             <div
@@ -77,24 +78,23 @@
             </div>
 
             <div
-                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium mb-3">
+                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-300 text-xs font-medium mb-3">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Step 2 of 2: Hardware Multi-Factor
+                Step 2 of 2: Two-Factor Authentication Setup
             </div>
 
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">Protect account with 2FA</h1>
-            <p class="text-zinc-400 text-sm mt-1 mb-6">Scan the cryptographic key using your preferred authenticator
-                app.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">Two-Factor Authentication</h1>
+            <p class="text-zinc-400 text-sm mt-1 mb-6">Scan the cryptographic key using your preferred authenticator app.</p>
 
             <!-- Supported Apps Pills -->
             <div class="flex items-center justify-center gap-2 mb-6">
                 <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-zinc-900/80 border border-zinc-800 text-zinc-400">Google
+                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">Google
                     Authenticator</span>
                 <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-zinc-900/80 border border-zinc-800 text-zinc-400">1Password</span>
+                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">1Password</span>
                 <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-zinc-900/80 border border-zinc-800 text-zinc-400">Authy</span>
+                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">Authy</span>
             </div>
 
             <!-- QR Code Card -->
@@ -105,12 +105,11 @@
             </div>
 
             <!-- Manual Setup Key Box -->
-            <div class="mb-6 p-4 rounded-xl bg-zinc-900/70 border border-zinc-800/80 text-left">
+            <div class="mb-6 p-4 rounded-xl glass-subpanel border border-white/10 text-left">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-400">Manual Setup
-                        Secret</span>
+                    <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Manual Setup Secret</span>
                     <button type="button" id="copyBtn" onclick="copySecret()"
-                        class="text-[11px] px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 hover:text-white transition flex items-center gap-1.5">
+                        class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:text-white transition flex items-center gap-1.5">
                         <svg id="copyIcon" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -118,7 +117,7 @@
                         <span id="copyText">Copy Key</span>
                     </button>
                 </div>
-                <div class="p-2.5 bg-zinc-950 rounded-lg border border-zinc-800 overflow-x-auto text-center">
+                <div class="p-2.5 bg-black/40 rounded-lg border border-white/10 overflow-x-auto text-center">
                     <code id="secretKey"
                         class="font-mono text-sm sm:text-base font-bold tracking-widest text-emerald-400 select-all">{{ secret }}</code>
                 </div>

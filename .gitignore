@@ -6,4 +6,4 @@ __pycache__/
 .DS_Store
 intership/
 static/qr_*.png
-static/qrcodes/
+static/qrcodes/.env

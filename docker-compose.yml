@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: auth_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: secure_auth_system
+      MYSQL_USER: auth_user
+      MYSQL_PASSWORD: SecureAuthDbPass2026!
+      MYSQL_ROOT_PASSWORD: RootSecurePassword2026!
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - auth-net
+
+  redis:
+    image: redis:alpine
+    container_name: auth_redis
+    restart: always
+    networks:
+      - auth-net
+
+  web:
+    build: .
+    container_name: auth_flask_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - auth-net
+
+volumes:
+  mysql_data:
+
+networks:
+  auth-net:
+    driver: bridge

@@ -1,52 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ error_title or "Security Notice" }} — secure-auth-system</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
-    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    <title>{{ error_title or "Security Notice" }} — Secure Auth System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Geist', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #09090b;
+            color: #fafafa;
+        }
+
+        .mesh-gradient {
+            background-image: radial-gradient(at 50% 0%, rgba(244, 63, 94, 0.12) 0px, transparent 55%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.06) 0px, transparent 50%);
+        }
+    </style>
 </head>
-<body class="auth-page">
-    <nav class="navbar" aria-label="Main">
-        <div class="container nav-inner">
-            <a class="brand-link" href="/">secure-auth-system</a>
-            <div class="nav-actions">
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
-                <a href="/login" class="btn btn-primary">Login</a>
+
+<body
+    class="min-h-screen mesh-gradient flex flex-col justify-between selection:bg-rose-500/20 selection:text-rose-400 font-sans antialiased">
+
+    <!-- Top Minimal Navbar -->
+    <header class="w-full border-b border-zinc-900 bg-zinc-950/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
+                <span
+                    class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-rose-400 group-hover:border-rose-500/40 transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </span>
+                <span class="font-semibold tracking-tight text-sm">secure<span class="text-zinc-500">.auth</span></span>
+            </a>
+            <div class="flex items-center gap-4 text-xs font-medium">
+                <a href="/login"
+                    class="px-3.5 py-1.5 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 hover:border-zinc-700 transition">
+                    Sign in
+                </a>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <main class="container auth-container">
-        <div class="auth-card" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 40px 30px;">
-            <div style="width: 100%;">
-                <div style="margin-bottom: 20px;">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto;">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                </div>
-                <h1 style="font-size: 26px; margin-bottom: 12px;">{{ error_title or "Request Blocked" }}</h1>
-                <p class="lead" style="color: var(--text-muted, #64748b); font-size: 16px; margin-bottom: 24px;">
-                    {{ error_message or "An unexpected security condition occurred. Please retry your request." }}
-                </p>
+    <!-- Main Content -->
+    <main class="flex-1 flex items-center justify-center px-4 py-12">
+        <div
+            class="w-full max-w-md rounded-2xl border border-zinc-800/80 bg-zinc-950/80 shadow-2xl backdrop-blur-xl p-8 sm:p-10 text-center">
 
-                {% if retry_after %}
-                <p style="background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 10px 16px; border-radius: 8px; font-weight: 500; margin-bottom: 24px;">
-                    {{ retry_after }}
-                </p>
-                {% endif %}
-
-                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-xl">Return to Sign In</a>
-                    <a href="/" class="btn btn-outline btn-xl">Go Home</a>
-                </div>
+            <div
+                class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 mb-6">
+                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
             </div>
+
+            <div
+                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium mb-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
+                Security Guardrail Triggered
+            </div>
+
+            <h1 class="text-2xl font-bold tracking-tight text-zinc-100">
+                {{ error_title or "Request Blocked" }}
+            </h1>
+
+            <p class="text-zinc-400 text-sm mt-2 mb-6 leading-relaxed">
+                {{ error_message or "An anomalous request or automated security boundary violation was detected.
+                Operation terminated." }}
+            </p>
+
+            {% if retry_after %}
+            <div class="mb-6 p-3 rounded-xl border border-rose-900/60 bg-rose-950/30 text-rose-300 font-mono text-xs">
+                <span>Cooldown Window: </span>
+                <span class="font-bold text-rose-200">{{ retry_after }}</span>
+            </div>
+            {% endif %}
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{{ url_for('login') }}"
+                    class="py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
+                    <span>Return to Sign In</span>
+                </a>
+                <a href="/"
+                    class="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 text-xs font-medium rounded-lg transition flex items-center justify-center">
+                    <span>Return Home</span>
+                </a>
+            </div>
+
+            <div class="mt-8 pt-5 border-t border-zinc-900 text-center">
+                <span class="text-[11px] font-mono text-zinc-500">Security Gate: <span class="text-zinc-400">RateLimiter
+                        + SessionStateGuard</span></span>
+            </div>
+
         </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-zinc-900 py-6 text-center text-xs text-zinc-600">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© <span id="year"></span> secure-auth-system. Enterprise Grade Infrastructure.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-zinc-400 transition">Incident Protocol</a>
+                <a href="#" class="hover:text-zinc-400 transition">Telemetry</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
 </body>
+
 </html>

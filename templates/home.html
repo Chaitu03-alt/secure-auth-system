@@ -1,106 +1,277 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>secure-auth-system — Modern Multi-Factor Authentication</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
-    <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+    <title>Secure Auth Engine — High-Assurance Zero-Trust Infrastructure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Geist', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #09090b;
+            color: #fafafa;
+        }
+
+        .hero-mesh {
+            background-image: radial-gradient(at 50% 0%, rgba(34, 197, 94, 0.12) 0px, transparent 60%),
+                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
+        }
+
+        .grid-pattern {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 32px 32px;
+        }
+    </style>
 </head>
-<body>
-    <nav class="navbar" role="navigation" aria-label="Main Navigation">
-        <div class="container nav-inner">
-            <div class="brand">
-                <a href="/" class="brand-link">secure-auth-system</a>
+
+<body
+    class="min-h-screen hero-mesh flex flex-col justify-between selection:bg-emerald-500/20 selection:text-emerald-400 font-sans antialiased">
+
+    <!-- Top Minimal Navbar -->
+    <header class="w-full border-b border-zinc-900 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="/" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
+                    <span
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </span>
+                    <span class="font-semibold tracking-tight text-sm">secure<span
+                            class="text-zinc-500">.auth</span></span>
+                </a>
+                <nav class="hidden md:flex items-center gap-6 text-xs font-medium text-zinc-400">
+                    <a href="#features" class="hover:text-zinc-200 transition">Security Features</a>
+                    <a href="#architecture" class="hover:text-zinc-200 transition">Architecture</a>
+                    <a href="#specs" class="hover:text-zinc-200 transition">Specs</a>
+                </nav>
             </div>
 
-            <div class="nav-center">
-                <a href="#features" class="nav-item">Features</a>
-                <a href="#architecture" class="nav-item">Architecture</a>
-                <a href="#about" class="nav-item">About</a>
-            </div>
-
-            <div class="nav-actions">
-                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark</button>
+            <div class="flex items-center gap-3 text-xs font-medium">
                 {% if session.get('user') %}
-                    <a href="/dashboard" class="btn btn-ghost">Dashboard</a>
-                    <a href="/logout" class="btn btn-primary">Sign Out</a>
+                <a href="/dashboard"
+                    class="px-3.5 py-1.5 rounded-lg bg-zinc-900 text-zinc-200 border border-zinc-800 hover:border-zinc-700 transition">
+                    Dashboard ({{ session.get('user') }})
+                </a>
+                <a href="/logout"
+                    class="px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold transition">
+                    Sign Out
+                </a>
                 {% else %}
-                    <a href="/login" class="btn btn-ghost">Sign In</a>
-                    <a href="/signup" class="btn btn-primary">Get Started</a>
+                <a href="/login" class="px-3.5 py-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 transition">
+                    Sign In
+                </a>
+                <a href="/signup"
+                    class="px-3.5 py-1.5 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold transition shadow-sm">
+                    Get Started
+                </a>
                 {% endif %}
-            </div>
-        </div>
-    </nav>
-
-    <header class="hero">
-        <div class="container hero-inner">
-            <div class="hero-copy">
-                <h1>Authentication built for trust and peace of mind.</h1>
-                <p class="lead">
-                    A thoughtfully engineered authentication engine featuring Time-Based One-Time Passwords (TOTP), session-staged verification, granular rate limiting, and end-to-end CSRF defense.
-                </p>
-                <div class="hero-ctas">
-                    {% if session.get('user') %}
-                        <a href="/dashboard" class="btn btn-xl btn-primary">Go to Your Dashboard</a>
-                    {% else %}
-                        <a href="/signup" class="btn btn-xl btn-primary">Create Your Account</a>
-                        <a href="/login" class="btn btn-xl btn-outline">Sign In to Existing Account</a>
-                    {% endif %}
-                </div>
             </div>
         </div>
     </header>
 
-    <main class="container main">
-        <section id="features" class="section features" aria-labelledby="features-heading">
-            <h2 id="features-heading">Engineered for security, designed for humans</h2>
-            <p class="section-sub">Essential layers of protection working silently behind every interaction.</p>
+    <!-- Hero Section -->
+    <main class="flex-1">
+        <section class="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-6">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Hardware TOTP • Redis Rate Throttling • Bcrypt-12
+            </div>
 
-            <div class="cards">
-                <article class="card">
-                    <h3>Multi-Factor Authentication (2FA)</h3>
-                    <p>RFC 6238 compliant TOTP generator compatible with Google Authenticator, Authy, and 1Password.</p>
-                </article>
-                <article class="card">
-                    <h3>Smart Throttling & Limiting</h3>
-                    <p>Sliding-window IP rate limiting prevents credential stuffing and automated brute-force attacks gracefully.</p>
-                </article>
-                <article class="card">
-                    <h3>Timing-Safe Cryptography</h3>
-                    <p>High-entropy Bcrypt password hashing with constant-time dummy comparisons to eliminate username enumeration.</p>
-                </article>
-                <article class="card">
-                    <h3>CSRF Protected Forms</h3>
-                    <p>Cryptographic tokens bound to every user session ensure state-changing requests cannot be forged.</p>
-                </article>
-                <article class="card">
-                    <h3>Audit Event Trail</h3>
-                    <p>Comprehensive login history tracking client IPs and status timestamps for complete operational visibility.</p>
-                </article>
-                <article class="card">
-                    <h3>Dark Mode & Fluid UI</h3>
-                    <p>Clean, human-centered responsive interface designed for readability across mobile, tablet, and desktop.</p>
-                </article>
+            <h1
+                class="text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-100 max-w-4xl mx-auto leading-tight sm:leading-tight">
+                Authentication engineered for <span
+                    class="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400 bg-clip-text text-transparent">zero-trust
+                    assurance</span>
+            </h1>
+
+            <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mt-6 leading-relaxed">
+                A hardened production authentication subsystem. Enforces multi-factor verification, sliding-window
+                anti-bruteforce guards, and cryptographic session boundaries.
+            </p>
+
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+                {% if session.get('user') %}
+                <a href="/dashboard"
+                    class="w-full sm:w-auto px-6 py-3 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2">
+                    <span>Open Security Console</span>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
+                {% else %}
+                <a href="/signup"
+                    class="w-full sm:w-auto px-6 py-3 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm transition shadow-lg shadow-emerald-500/10 flex items-center justify-center gap-2">
+                    <span>Provision Account</span>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </a>
+                <a href="/login"
+                    class="w-full sm:w-auto px-6 py-3 rounded-lg bg-zinc-900 hover:bg-zinc-850 text-zinc-300 border border-zinc-800 hover:border-zinc-700 text-sm font-medium transition">
+                    Sign In with 2FA
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Terminal / Architecture Preview Widget -->
+            <div
+                class="mt-14 max-w-3xl mx-auto rounded-2xl border border-zinc-800 bg-zinc-950/80 shadow-2xl backdrop-blur-xl overflow-hidden text-left">
+                <div class="px-4 py-3 border-b border-zinc-850 bg-zinc-900/50 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-700"></span>
+                        <span class="text-[11px] font-mono text-zinc-500 ml-2">auth-gateway.cluster.internal</span>
+                    </div>
+                    <span class="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Active Guard</span>
+                </div>
+                <div class="p-5 font-mono text-xs text-zinc-300 space-y-2 bg-zinc-950/90">
+                    <p class="text-zinc-500"># Initializing stage-1 primary authentication challenge</p>
+                    <p><span class="text-emerald-400">POST</span> /loginsubmit <span class="text-zinc-500">→</span>
+                        verify_bcrypt_hash(key_rounds=12) <span class="text-emerald-400 font-semibold">[PASS]</span></p>
+                    <p class="text-zinc-500"># Evaluating Redis sliding-window throttle limit</p>
+                    <p><span class="text-blue-400">REDIS</span> rate_limit:login:client_ip <span
+                            class="text-zinc-500">→</span> 1/5 per minute <span
+                            class="text-blue-400 font-semibold">[PERMITTED]</span></p>
+                    <p class="text-zinc-500"># Enforcing RFC 6238 hardware TOTP token handshake</p>
+                    <p><span class="text-purple-400">TOTP</span> verify_window_skew(±1) <span
+                            class="text-zinc-500">→</span> token_match=true <span
+                            class="text-purple-400 font-semibold">[STAGE2_VERIFIED]</span></p>
+                </div>
             </div>
         </section>
 
-        <section id="about" class="section about" aria-labelledby="about-heading">
-            <h2 id="about-heading">About secure-auth-system</h2>
-            <p>
-                secure-auth-system is designed to demonstrate defense-in-depth security principles in modern web applications. Every layer—from database constraints to session state machines—is hardened with care and tested thoroughly.
-            </p>
+        <!-- Feature Grid Section -->
+        <section id="features" class="max-w-6xl mx-auto px-6 py-16 border-t border-zinc-900">
+            <div class="mb-12">
+                <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100">Engineered Defense in Depth</h2>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1">Every layer hardened against state replay, timing
+                    enumeration, and token exhaustion.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Hardware 2FA / TOTP</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Compatible with Google Authenticator, Authy,
+                            and 1Password via standard RFC 6238 time-step windows.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Redis Rate Throttling</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">In-memory sliding-window algorithms gracefully
+                            defeat brute-force and credential-stuffing attacks.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Timing-Safe Cryptography</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Bcrypt adaptive salt stretching and dummy
+                            lookups neutralize side-channel username enumeration.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">State CSRF Enforcement</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Cryptographic tokens bound to ephemeral session
+                            nonces eliminate cross-origin request injection.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Immutable Audit Trail</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Complete chronological event logs capturing
+                            client IP addresses and multi-stage verification state.</p>
+                    </div>
+                </div>
+
+                <div class="p-6 rounded-xl border border-zinc-800/80 bg-zinc-950/60 flex flex-col justify-between">
+                    <div>
+                        <div
+                            class="w-9 h-9 rounded-lg bg-zinc-700/30 border border-zinc-700/50 text-zinc-300 flex items-center justify-center mb-4">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            </svg>
+                        </div>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Containerized Isolation</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Production topology orchestrated via Docker
+                            Compose with dedicated network boundaries.</p>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-inner">
-            <div>© <span id="year"></span> secure-auth-system. All rights reserved.</div>
-            <div class="footer-links">
-                <a href="/login">Sign In</a>
-                <a href="/signup">Register</a>
-                <a href="#features">Features</a>
+    <!-- Footer -->
+    <footer class="w-full border-t border-zinc-900 py-8 text-center text-xs text-zinc-600">
+        <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© <span id="year"></span> secure-auth-system. Enterprise Grade Zero-Trust Stack.</p>
+            <div class="flex gap-6">
+                <a href="/login" class="hover:text-zinc-400 transition">Sign In</a>
+                <a href="/signup" class="hover:text-zinc-400 transition">Provision</a>
+                <a href="#features" class="hover:text-zinc-400 transition">Security Model</a>
             </div>
         </div>
     </footer>
@@ -109,4 +280,5 @@
         document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 </body>
+
 </html>

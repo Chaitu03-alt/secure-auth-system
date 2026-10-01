@@ -1,8 +1,26 @@
+# Virtual environments & python caches
 .venv
 __pycache__
+*.py[cod]
+*.pyc
+.pytest_cache
+
+# Secrets, private keys & env files
+.env
+*.pem
+flask-auth-key.pem
+
+# Git & OS metadata
+.git
+.gitignore
+.DS_Store
+Thumbs.db
+
+# Dynamic QR code artifacts
+static/qrcodes/*.png
+static/qr_*.png
+
+# Temporary or archive packages
 *.msi
 *.zip
-.git
-.env
-static/qr_*.png
 intership

@@ -1,9 +1,31 @@
-.venv/
+# Python & compilation artifacts
 __pycache__/
+*.py[cod]
+*.pyc
+*$py.class
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Secrets, private keys & environment variables
 .env
+*.pem
+flask-auth-key.pem
+
+# OS & IDE metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Dynamically generated TOTP QR codes
+static/qrcodes/*.png
+static/qr_*.png
+
+# Build & archive artifacts
 *.msi
 *.zip
-.DS_Store
 intership/
-static/qr_*.png
-static/qrcodes/.env

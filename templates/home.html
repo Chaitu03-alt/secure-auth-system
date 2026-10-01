@@ -97,19 +97,19 @@
             <div
                 class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-6">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Hardware TOTP • Redis Rate Throttling • Bcrypt-12
+                RFC 6238 TOTP • Tiered Rate Limiting • Bcrypt-12
             </div>
 
             <h1
                 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-zinc-100 max-w-4xl mx-auto leading-tight sm:leading-tight">
                 Authentication engineered for <span
-                    class="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400 bg-clip-text text-transparent">zero-trust
-                    assurance</span>
+                    class="bg-gradient-to-r from-emerald-400 via-teal-300 to-blue-400 bg-clip-text text-transparent">defense-in-depth
+                    security</span>
             </h1>
 
             <p class="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto mt-6 leading-relaxed">
-                A hardened production authentication subsystem. Enforces multi-factor verification, sliding-window
-                anti-bruteforce guards, and cryptographic session boundaries.
+                A hardened production authentication reference implementation. Enforces multi-factor verification,
+                tiered anti-bruteforce guards, and cryptographic session boundaries.
             </p>
 
             <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -135,33 +135,6 @@
                 </a>
                 {% endif %}
             </div>
-
-            <!-- Terminal / Architecture Preview Widget -->
-            <div
-                class="mt-14 max-w-3xl mx-auto rounded-2xl glass-panel terminal-card overflow-hidden text-left shadow-2xl">
-                <div class="px-4 py-3 border-b border-white/10 bg-white/[0.02] flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-600"></span>
-                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-600"></span>
-                        <span class="w-2.5 h-2.5 rounded-full bg-zinc-600"></span>
-                        <span class="text-[11px] font-mono text-zinc-400 ml-2">auth-gateway.cluster.internal</span>
-                    </div>
-                    <span class="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Active Guard</span>
-                </div>
-                <div class="p-5 font-mono text-xs text-zinc-300 space-y-2 bg-black/25">
-                    <p class="text-zinc-500"># Initializing stage-1 primary authentication challenge</p>
-                    <p><span class="text-emerald-400">POST</span> /loginsubmit <span class="text-zinc-500">→</span>
-                        verify_bcrypt_hash(key_rounds=12) <span class="text-emerald-400 font-semibold">[PASS]</span></p>
-                    <p class="text-zinc-500"># Evaluating Redis sliding-window throttle limit</p>
-                    <p><span class="text-blue-400">REDIS</span> rate_limit:login:client_ip <span
-                            class="text-zinc-500">→</span> 1/5 per minute <span
-                            class="text-blue-400 font-semibold">[PERMITTED]</span></p>
-                    <p class="text-zinc-500"># Enforcing RFC 6238 hardware TOTP token handshake</p>
-                    <p><span class="text-purple-400">TOTP</span> verify_window_skew(±1) <span
-                            class="text-zinc-500">→</span> token_match=true <span
-                            class="text-purple-400 font-semibold">[STAGE2_VERIFIED]</span></p>
-                </div>
-            </div>
         </section>
 
         <!-- Feature Grid Section -->
@@ -182,7 +155,7 @@
                                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
                         </div>
-                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Hardware 2FA / TOTP</h3>
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">RFC 6238 TOTP 2FA</h3>
                         <p class="text-xs text-zinc-400 leading-relaxed">Compatible with Google Authenticator, Authy,
                             and 1Password via standard RFC 6238 time-step windows.</p>
                     </div>
@@ -196,8 +169,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                         </div>
-                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Redis Rate Throttling</h3>
-                        <p class="text-xs text-zinc-400 leading-relaxed">In-memory sliding-window algorithms gracefully
+                        <h3 class="text-sm font-semibold text-zinc-200 mb-1.5">Tiered Rate Throttling</h3>
+                        <p class="text-xs text-zinc-400 leading-relaxed">Endpoint rate-limiting algorithms gracefully
                             defeat brute-force and credential-stuffing attacks.</p>
                     </div>
                 </div>

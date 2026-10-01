@@ -4,10 +4,10 @@ services:
     container_name: auth_mysql
     restart: always
     environment:
-      MYSQL_DATABASE: secure_auth_system
-      MYSQL_USER: auth_user
-      MYSQL_PASSWORD: SecureAuthDbPass2026!
-      MYSQL_ROOT_PASSWORD: RootSecurePassword2026!
+      MYSQL_DATABASE: ${DB_NAME:-secure_auth_system}
+      MYSQL_USER: ${DB_USER:-auth_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database:/docker-entrypoint-initdb.d

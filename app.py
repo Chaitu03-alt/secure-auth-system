@@ -23,6 +23,7 @@ from datetime import datetime, timedelta
 from email.mime.text import MIMEText
 
 import bcrypt
+from cryptography.fernet import Fernet, InvalidToken
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_limiter import Limiter
@@ -90,6 +91,30 @@ def send_reset_email(to_email, reset_link):
 
 
 DUMMY_BCRYPT_HASH = "$2b$12$CwTycUXWue0Thq9StjUM0uJ2a3y5j3qF7A0kR.QnE6pS/uXmH1qOm"
+
+TOTP_ENCRYPTION_KEY = os.environ.get("TOTP_ENCRYPTION_KEY")
+if not TOTP_ENCRYPTION_KEY:
+    _derived_key = hashlib.sha256((app.config["SECRET_KEY"] + ":totp_encryption_salt").encode("utf-8")).digest()
+    TOTP_ENCRYPTION_KEY = base64.urlsafe_b64encode(_derived_key).decode("ascii")
+
+fernet = Fernet(TOTP_ENCRYPTION_KEY.encode("utf-8") if isinstance(TOTP_ENCRYPTION_KEY, str) else TOTP_ENCRYPTION_KEY)
+
+
+def encrypt_totp_secret(plain_secret: str) -> str:
+    """Encrypt base32 TOTP secret string at rest using Fernet (AES-128-CBC + HMAC-SHA256)."""
+    if not plain_secret:
+        return ""
+    return fernet.encrypt(plain_secret.encode("utf-8")).decode("utf-8")
+
+
+def decrypt_totp_secret(cipher_or_plain: str) -> str:
+    """Decrypt Fernet-encrypted TOTP secret; gracefully fall back to plaintext for migration."""
+    if not cipher_or_plain:
+        return ""
+    try:
+        return fernet.decrypt(cipher_or_plain.encode("utf-8")).decode("utf-8")
+    except (InvalidToken, Exception):
+        return cipher_or_plain
 
 try:
     import pymysql
@@ -308,9 +333,10 @@ def create_user():
             if cur.fetchone():
                 return _reject("Registration could not be completed with the provided username or email. Please choose another or sign in.")
             totp_secret = pyotp.random_base32()
+            encrypted_totp = encrypt_totp_secret(totp_secret)
             cur.execute(
                 "INSERT INTO users (username, email, password_hash, totp_secret, is_totp_enabled) VALUES (%s, %s, %s, %s, %s)",
-                (usernm, email, hash_password(passwd), totp_secret, False),
+                (usernm, email, hash_password(passwd), encrypted_totp, False),
             )
         session.clear()
         session["registration_user"] = usernm
@@ -343,7 +369,7 @@ def showqr(username):
         if not user or not user.get("totp_secret"):
             return _render_error("Account Not Found", f"No account matching '{username}' was found with an active 2FA setup.", 404)
 
-        ga_key = user["totp_secret"]
+        ga_key = decrypt_totp_secret(user["totp_secret"])
         otp_url = pyotp.TOTP(ga_key).provisioning_uri(name=username, issuer_name="secure-auth-system")
 
         # Stream directly from memory via base64 data URI (zero disk writes)
@@ -420,7 +446,8 @@ def verify_otp():
     except Exception as err:
         logger.error("DB error during OTP verify: %s", err)
 
-    if user and user.get("totp_secret") and pyotp.TOTP(user["totp_secret"]).verify(otp, valid_window=1):
+    raw_secret = decrypt_totp_secret(user["totp_secret"]) if user else None
+    if user and raw_secret and pyotp.TOTP(raw_secret).verify(otp, valid_window=1):
         session.clear()
         session.permanent = True
         session["user_id"] = user["id"]

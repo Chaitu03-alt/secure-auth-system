@@ -6,7 +6,7 @@ TOTP generation and verification, rate limiting, and CSRF protection.
 
 import pyotp
 import pytest
-from app import verify_password
+from app import verify_password, decrypt_totp_secret
 from tests.conftest import extract_csrf_token
 
 
@@ -35,7 +35,8 @@ class TestRegistrationFlow:
         assert verify_password("JudgementDay1997!", user["password_hash"]) is True
         assert verify_password("WrongPassword!", user["password_hash"]) is False
         assert user["totp_secret"] is not None
-        assert len(user["totp_secret"]) == 32
+        assert user["totp_secret"].startswith("gAAAAA")
+        assert len(decrypt_totp_secret(user["totp_secret"])) == 32
 
     def test_registration_password_mismatch(self, client):
         """Reject registration when password confirmation fails."""

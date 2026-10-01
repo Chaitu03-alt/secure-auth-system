@@ -131,13 +131,24 @@ class TestTOTPVerification:
 
     def test_showqr_endpoint(self, client, registered_user):
         """Display QR code and manual setup key for registered user."""
+        with client.session_transaction() as session:
+            session["registration_user"] = registered_user["username"]
+            session["can_view_qr"] = True
         response = client.get(f"/showqr/{registered_user['username']}")
         assert response.status_code == 200
         assert registered_user["totp_secret"].encode() in response.data
         assert b"Two-Factor Authentication" in response.data
 
+    def test_showqr_unauthorized_fails(self, client, registered_user):
+        """Unauthenticated request to showqr returns 403."""
+        response = client.get(f"/showqr/{registered_user['username']}")
+        assert response.status_code == 403
+
     def test_showqr_nonexistent_user(self, client):
         """Requesting QR code for unknown user returns 404."""
+        with client.session_transaction() as session:
+            session["registration_user"] = "unknown_user_xyz"
+            session["can_view_qr"] = True
         response = client.get("/showqr/unknown_user_xyz")
         assert response.status_code == 404
 

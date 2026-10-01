@@ -10,7 +10,9 @@ Architectural Highlights:
 - Dynamic User Dashboard with Session Telemetry & Audit Logs
 """
 
+import base64
 import hashlib
+import io
 import logging
 import os
 import re
@@ -310,6 +312,9 @@ def create_user():
                 "INSERT INTO users (username, email, password_hash, totp_secret, is_totp_enabled) VALUES (%s, %s, %s, %s, %s)",
                 (usernm, email, hash_password(passwd), totp_secret, False),
             )
+        session.clear()
+        session["registration_user"] = usernm
+        session["can_view_qr"] = True
         flash("Account created successfully! Please configure Two-Factor Authentication below.", "success")
         return redirect(url_for("showqr", username=usernm))
     except Exception as err:
@@ -319,7 +324,17 @@ def create_user():
 
 @app.route("/showqr/<username>")
 def showqr(username):
-    """Display TOTP QR code and setup secret for authenticator configuration."""
+    """Display TOTP QR code and setup secret for authenticator configuration (single-use upon registration)."""
+    if session.get("registration_user") != username or not session.get("can_view_qr"):
+        return _render_error(
+            "Access Denied",
+            "Two-Factor Authentication setup can only be viewed once immediately upon registration.",
+            403,
+        )
+
+    # Invalidate immediately so refreshing or revisiting is blocked (shown once)
+    session.pop("can_view_qr", None)
+
     try:
         with db_cursor() as cur:
             cur.execute("SELECT totp_secret FROM users WHERE username = %s", (username,))
@@ -331,12 +346,13 @@ def showqr(username):
         ga_key = user["totp_secret"]
         otp_url = pyotp.TOTP(ga_key).provisioning_uri(name=username, issuer_name="secure-auth-system")
 
-        qr_dir = os.path.join(app.root_path, "static", "qrcodes")
-        os.makedirs(qr_dir, exist_ok=True)
-        qr_file = f"qr_{username}.png"
-        qrcode.make(otp_url).save(os.path.join(qr_dir, qr_file))
+        # Stream directly from memory via base64 data URI (zero disk writes)
+        buf = io.BytesIO()
+        qrcode.make(otp_url).save(buf, format="PNG")
+        qr_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+        qr_data_uri = f"data:image/png;base64,{qr_b64}"
 
-        return render_template("showqr.html", username=username, qr_filename=qr_file, secret=ga_key)
+        return render_template("showqr.html", username=username, qr_data_uri=qr_data_uri, secret=ga_key)
     except Exception as err:
         logger.error("QR generation error: %s", err)
         return _render_error("Authenticator Setup Error", "Could not generate your authenticator QR code. Please try again later.", 500)

@@ -99,7 +99,7 @@
 
             <!-- QR Code Card -->
             <div class="relative inline-block p-4 bg-white rounded-2xl shadow-xl shadow-emerald-950/20 mb-6 group">
-                <img src="{{ url_for('static', filename='qrcodes/qr_' + username + '.png') }}"
+                <img src="{{ qr_data_uri }}"
                     alt="2FA QR Code for {{ username }}" class="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg">
                 <div class="mt-2 text-[10px] font-mono text-zinc-600">user: {{ username }}</div>
             </div>

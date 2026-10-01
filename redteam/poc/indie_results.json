@@ -1,0 +1,70 @@
+{
+  "01_account_takeover": {
+    "post_status": 200,
+    "login_with_hijacked_pw": false,
+    "verdict": "FIXED"
+  },
+  "02_totp_leak": {
+    "status": 403,
+    "secret_leaked": false,
+    "verdict": "FIXED"
+  },
+  "03_username_enum": {
+    "username_in_response": false,
+    "generic_msg_exist": true,
+    "generic_msg_nonexist": true,
+    "timing_delta_s": 0.002,
+    "verdict": "FIXED"
+  },
+  "04_ratelimit_lockout": {
+    "login_statuses_7_reqs": [
+      200,
+      200,
+      200,
+      200,
+      429,
+      429,
+      429
+    ],
+    "rate_limit_triggered": true,
+    "totp_counter_reset_by_cookie_clear": false,
+    "server_side_lockout_persists": false,
+    "verdict": "FIXED"
+  },
+  "05_session_handling": {
+    "login_failed": true
+  },
+  "06_bad_inputs": {
+    "long_pw_blocked": true,
+    "sql_crashes": 0,
+    "empty_fields_blocked": false,
+    "verdict": "PARTIAL/VULNERABLE"
+  },
+  "07_infra": {
+    "flask_debug_in_env": false,
+    "console_accessible": false,
+    "stack_trace_in_404": false,
+    "server_header_exposed": false,
+    "verdict": "FIXED"
+  },
+  "08_totp_replay": {
+    "first_otp_accepted": false,
+    "replay_accepted": false,
+    "verdict": "FIXED"
+  },
+  "12_security_headers": {
+    "checks": {
+      "CSP": true,
+      "HSTS": true,
+      "X-Frame-Options": true,
+      "X-Content-Type-Options": true,
+      "Referrer-Policy": true,
+      "Permissions-Policy": true,
+      "Server-header-suppressed": true
+    },
+    "csp_issues": [
+      "unsafe-inline in script-src"
+    ],
+    "verdict": "PARTIAL"
+  }
+}

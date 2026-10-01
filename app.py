@@ -32,6 +32,7 @@ from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFError, CSRFProtect
 import pyotp
 import qrcode
+from qrcode.image.pil import PilImage
 from werkzeug.security import check_password_hash
 
 try:
@@ -435,7 +436,8 @@ def showqr(username):
 
         # Stream directly from memory via base64 data URI (zero disk writes)
         buf = io.BytesIO()
-        qrcode.make(otp_url).save(buf, format="PNG")
+        qr_img = qrcode.make(otp_url, image_factory=PilImage)
+        qr_img.save(buf, format="PNG")
         qr_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
         qr_data_uri = f"data:image/png;base64,{qr_b64}"
 

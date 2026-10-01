@@ -1,0 +1,49 @@
+{
+  "test_1_account_takeover": {
+    "status_code": 302,
+    "redirect_to": "/login",
+    "login_with_hijacked_pw_status": 302,
+    "login_redirect": "/verify-otp",
+    "vulnerable": true
+  },
+  "test_2_totp_leak": {
+    "status_code": 200,
+    "leaked_secret": "EZ6NAKNUOHT2PXGHGCZJ77X6I5I5Z53N",
+    "totp_bypass_successful": true
+  },
+  "test_3_username_enumeration": {
+    "existing_email_leaked_user": true,
+    "nonexistent_email_handled": true,
+    "vulnerable": true
+  },
+  "test_4_rate_limiting": {
+    "login_statuses_7_reqs": [
+      200,
+      200,
+      200,
+      429,
+      429,
+      429,
+      429
+    ],
+    "throttled_429": true,
+    "totp_strike_counter_resets_on_cookie_clear": false
+  },
+  "test_5_session_handling": {
+    "has_httponly": true,
+    "has_samesite": true,
+    "has_secure": false,
+    "csrf_blocked_without_token": true,
+    "replayed_session_valid_after_logout": false
+  },
+  "test_6_bad_input": {
+    "bcrypt_truncates_after_72_bytes": false,
+    "sql_injection_crashes": 0,
+    "empty_fields_validated": true
+  },
+  "test_7_infra_failures": {
+    "redis_configured": "memory://",
+    "db_failure_exception_type": "OperationalError",
+    "flask_debug_in_env": true
+  }
+}

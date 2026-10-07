@@ -1,5 +1,2 @@
-/* ==========================================================================
-   secure-auth-system: Dashboard Stylesheet
-   Imports unified Liquid Glassmorphism design tokens and rules from home.css.
-   ========================================================================== */
+/* secure-auth-system: newhomepage.css — delegates to unified enterprise design system */
 @import url('home.css');

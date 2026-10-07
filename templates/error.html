@@ -1,130 +1,87 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ error_title or "Security Notice" }} — Secure Auth System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Geist', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #09090b;
-            color: #fafafa;
-        }
-
-        .mesh-gradient {
-            background-image: radial-gradient(at 50% 0%, rgba(244, 63, 94, 0.12) 0px, transparent 55%),
-                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.06) 0px, transparent 50%);
-        }
-    </style>
+    <meta name="description" content="Request blocked or error — Secure Auth System.">
+    <title>{{ error_title or "Request Blocked" }} — Secure Auth System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 
-<body
-    class="min-h-screen mesh-gradient flex flex-col justify-between selection:bg-rose-500/20 selection:text-rose-400 font-sans antialiased">
+<body>
 
-    <!-- Floating Pill Navbar -->
-    <header class="floating-navbar glass-nav sticky top-3 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
-                <span
-                    class="w-8 h-8 rounded-lg bg-zinc-900/80 border border-white/10 flex items-center justify-center text-rose-400 group-hover:border-rose-500/40 transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="nav-inner">
+            <a href="/" class="brand-link">
+                <span class="brand-icon">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </span>
-                <span class="font-semibold tracking-tight text-sm">secure<span class="text-zinc-500">.auth</span></span>
+                secure-auth
             </a>
-            <div class="flex items-center gap-4 text-xs font-medium">
-                <a href="/login"
-                    class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:border-white/20 transition">
-                    Sign in
-                </a>
+            <div class="nav-actions">
+                <a href="/login" class="btn btn-default">Sign in</a>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex items-center justify-center px-4 py-12">
-        <div
-            class="w-full max-w-md rounded-2xl glass-panel auth-card shadow-2xl p-8 sm:p-10 text-center">
+    <!-- Main -->
+    <main class="content-center">
+        <div class="auth-wrapper">
+            <div style="background:var(--bg-canvas-subtle);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;text-align:center;">
 
-            <div
-                class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 mb-6">
-                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+                <!-- Error icon -->
+                <div style="display:inline-flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:var(--radius-md);background:rgba(248,81,73,0.1);border:1px solid #f85149;color:#f85149;margin-bottom:1.25rem;">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+
+                <h1 style="font-size:1rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">
+                    {{ error_title or "Request Blocked" }}
+                </h1>
+
+                <p style="font-size:0.8125rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1.5rem;">
+                    {{ error_message or "Your request could not be processed. This may be due to a security policy violation, session expiry, or rate limit." }}
+                </p>
+
+                {% if retry_after %}
+                <div style="margin-bottom:1.5rem;padding:0.625rem 0.875rem;border:1px solid var(--border-default);border-radius:var(--radius-md);background:var(--bg-canvas);font-size:0.8125rem;color:var(--text-secondary);">
+                    <span>Retry after: </span>
+                    <code style="font-family:var(--font-mono);font-weight:600;color:var(--text-primary);">{{ retry_after }}</code>
+                </div>
+                {% endif %}
+
+                <div style="display:flex;flex-direction:column;gap:0.5rem;">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.4375rem 1rem;">
+                        Return to Sign In
+                    </a>
+                    <a href="/" class="btn btn-default" style="width:100%;justify-content:center;padding:0.4375rem 1rem;">
+                        Return to Home
+                    </a>
+                </div>
+
+                <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-default);">
+                    <p style="font-size:0.6875rem;color:var(--text-muted);font-family:var(--font-mono);">
+                        Guard: RateLimiter + SessionStateGuard
+                    </p>
+                </div>
             </div>
-
-            <div
-                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium mb-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>
-                Security Guardrail Triggered
-            </div>
-
-            <h1 class="text-2xl font-bold tracking-tight text-zinc-100">
-                {{ error_title or "Request Blocked" }}
-            </h1>
-
-            <p class="text-zinc-400 text-sm mt-2 mb-6 leading-relaxed">
-                {{ error_message or "An anomalous request or automated security boundary violation was detected.
-                Operation terminated." }}
-            </p>
-
-            {% if retry_after %}
-            <div class="mb-6 p-3 rounded-xl border border-rose-900/60 bg-rose-950/30 text-rose-300 font-mono text-xs">
-                <span>Cooldown Window: </span>
-                <span class="font-bold text-rose-200">{{ retry_after }}</span>
-            </div>
-            {% endif %}
-
-            <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="{{ url_for('login') }}"
-                    class="py-2.5 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
-                    <span>Return to Sign In</span>
-                </a>
-                <a href="/"
-                    class="py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 hover:border-zinc-700 text-xs font-medium rounded-lg transition flex items-center justify-center">
-                    <span>Return Home</span>
-                </a>
-            </div>
-
-            <div class="mt-8 pt-5 border-t border-zinc-900 text-center">
-                <span class="text-[11px] font-mono text-zinc-500">Security Gate: <span class="text-zinc-400">RateLimiter
-                        + SessionStateGuard</span></span>
-            </div>
-
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="w-full border-t border-zinc-900 py-6 text-center text-xs text-zinc-600">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p>© <span id="year"></span> secure-auth-system. Enterprise Grade Infrastructure.</p>
-            <div class="flex gap-4">
-                <a href="#" class="hover:text-zinc-400 transition">Incident Protocol</a>
-                <a href="#" class="hover:text-zinc-400 transition">Telemetry</a>
-            </div>
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <span class="site-footer__copy">&copy; <span id="year"></span> secure-auth-system. All rights reserved.</span>
+            <ul class="site-footer__links">
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
         </div>
     </footer>
 

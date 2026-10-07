@@ -1,151 +1,105 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Provision Authenticator (2FA) — Secure Auth System</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Geist', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #09090b;
-            color: #fafafa;
-        }
-
-        .mesh-gradient {
-            background-image: radial-gradient(at 50% 0%, rgba(34, 197, 94, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.08) 0px, transparent 50%);
-        }
-    </style>
+    <meta name="description" content="Set up two-factor authentication — Secure Auth System.">
+    <title>Set Up Two-Factor Authentication — Secure Auth System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 
-<body
-    class="min-h-screen mesh-gradient flex flex-col justify-between selection:bg-emerald-500/20 selection:text-emerald-400 font-sans antialiased">
+<body>
 
-    <!-- Floating Pill Navbar -->
-    <header class="floating-navbar glass-nav sticky top-3 z-50">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2.5 text-zinc-100 hover:text-white transition group">
-                <span
-                    class="w-8 h-8 rounded-lg bg-zinc-900/80 border border-white/10 flex items-center justify-center text-emerald-400 group-hover:border-emerald-500/40 transition">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="nav-inner">
+            <a href="/" class="brand-link">
+                <span class="brand-icon">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </span>
-                <span class="font-semibold tracking-tight text-sm">secure<span class="text-zinc-500">.auth</span></span>
+                secure-auth
             </a>
-            <div class="flex items-center gap-4 text-xs font-medium">
-                <a href="/login"
-                    class="px-3.5 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:border-white/20 transition">
-                    Sign in
-                </a>
+            <div class="nav-actions">
+                <a href="/login" class="btn btn-default">Sign in</a>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="flex-1 flex items-center justify-center px-4 py-12">
-        <div
-            class="w-full max-w-lg rounded-2xl glass-panel auth-card shadow-2xl p-8 sm:p-10 text-center">
+    <!-- Main -->
+    <main class="content-center">
+        <div class="auth-wrapper" style="max-width:30rem;">
+            <div style="background:var(--bg-canvas-subtle);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:2rem;">
 
-            <!-- Icon & Header -->
-            <div
-                class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-5">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-            </div>
-
-            <div
-                class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900/80 border border-white/10 text-zinc-300 text-xs font-medium mb-3">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Step 2 of 2: Two-Factor Authentication Setup
-            </div>
-
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-100">Two-Factor Authentication</h1>
-            <p class="text-zinc-400 text-sm mt-1 mb-6">Scan the cryptographic key using your preferred authenticator app.</p>
-
-            <!-- Supported Apps Pills -->
-            <div class="flex items-center justify-center gap-2 mb-6">
-                <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">Google
-                    Authenticator</span>
-                <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">1Password</span>
-                <span
-                    class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300">Authy</span>
-            </div>
-
-            <!-- QR Code Card -->
-            <div class="relative inline-block p-4 bg-white rounded-2xl shadow-xl shadow-emerald-950/20 mb-6 group">
-                <img src="{{ qr_data_uri }}"
-                    alt="2FA QR Code for {{ username }}" class="w-48 h-48 sm:w-52 sm:h-52 object-contain rounded-lg">
-                <div class="mt-2 text-[10px] font-mono text-zinc-600">user: {{ username }}</div>
-            </div>
-
-            <!-- Manual Setup Key Box -->
-            <div class="mb-6 p-4 rounded-xl glass-subpanel border border-white/10 text-left">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[11px] uppercase tracking-wider font-semibold text-zinc-300">Manual Setup Secret</span>
-                    <button type="button" id="copyBtn" onclick="copySecret()"
-                        class="text-[11px] px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-zinc-200 border border-white/10 hover:text-white transition flex items-center gap-1.5">
-                        <svg id="copyIcon" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                        </svg>
-                        <span id="copyText">Copy Key</span>
-                    </button>
+                <!-- Step indicator -->
+                <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.75rem;color:var(--text-muted);margin-bottom:1.5rem;">
+                    <span style="display:flex;align-items:center;justify-content:center;width:1.25rem;height:1.25rem;border-radius:50%;background:var(--accent-green);color:#fff;font-size:0.625rem;font-weight:700;flex-shrink:0;">1</span>
+                    <span style="color:var(--text-muted);">Create account</span>
+                    <span style="flex:1;height:1px;background:var(--border-default);"></span>
+                    <span style="display:flex;align-items:center;justify-content:center;width:1.25rem;height:1.25rem;border-radius:50%;background:var(--btn-primary-bg);color:#fff;font-size:0.625rem;font-weight:700;flex-shrink:0;">2</span>
+                    <span style="color:var(--text-primary);font-weight:500;">Set up 2FA</span>
                 </div>
-                <div class="p-2.5 bg-black/40 rounded-lg border border-white/10 overflow-x-auto text-center">
-                    <code id="secretKey"
-                        class="font-mono text-sm sm:text-base font-bold tracking-widest text-emerald-400 select-all">{{ secret }}</code>
+
+                <h1 style="font-size:1.125rem;font-weight:600;color:var(--text-primary);margin-bottom:0.375rem;">Two-Factor Authentication Setup</h1>
+                <p style="font-size:0.8125rem;color:var(--text-secondary);margin-bottom:1.5rem;">Scan the QR code below with your authenticator app. This completes your account setup.</p>
+
+                <!-- Supported apps -->
+                <div style="display:flex;flex-wrap:wrap;gap:0.375rem;margin-bottom:1.5rem;">
+                    <span class="badge">Google Authenticator</span>
+                    <span class="badge">Authy</span>
+                    <span class="badge">1Password</span>
+                    <span class="badge">Microsoft Authenticator</span>
                 </div>
+
+                <!-- QR Code -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;margin-bottom:1.5rem;">
+                    <div class="qr-container">
+                        <img src="{{ qr_data_uri }}" alt="Two-factor authentication QR code for {{ username }}">
+                    </div>
+                    <span style="font-size:0.6875rem;color:var(--text-muted);font-family:var(--font-mono);">Account: {{ username }}</span>
+                </div>
+
+                <!-- Manual Setup Key -->
+                <div style="margin-bottom:1.5rem;background:var(--bg-canvas);border:1px solid var(--border-default);border-radius:var(--radius-md);overflow:hidden;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.875rem;border-bottom:1px solid var(--border-default);">
+                        <span style="font-size:0.6875rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;">Manual Setup Key</span>
+                        <button type="button" id="copyBtn" onclick="copySecret()" class="btn btn-default btn-sm" style="display:flex;align-items:center;gap:0.25rem;">
+                            <svg id="copyIcon" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span id="copyText">Copy</span>
+                        </button>
+                    </div>
+                    <div style="padding:0.75rem 0.875rem;text-align:center;">
+                        <code id="secretKey" class="secret-key">{{ secret }}</code>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning" style="margin-bottom:1.5rem;font-size:0.75rem;">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;margin-top:1px;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Save this key securely. If you lose access to your authenticator app, this key is required for recovery. It will not be shown again.</span>
+                </div>
+
+                <a href="{{ url_for('login') }}" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.5rem 1rem;font-size:0.875rem;">
+                    Continue to Sign In
+                </a>
             </div>
-
-            <!-- Action Button -->
-            <a href="{{ url_for('login') }}"
-                class="w-full py-3 px-4 bg-zinc-100 hover:bg-white text-zinc-950 font-semibold text-sm rounded-lg shadow-sm transition hover:shadow-emerald-500/10 hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2">
-                <span>Continue to Sign In</span>
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-            </a>
-
-            <p class="text-[11px] text-zinc-500 mt-4">
-                Ensure you save this key. Time-step verification token (TOTP) refreshes every 30 seconds.
-            </p>
         </div>
     </main>
 
-    <!-- Minimal Footer -->
-    <footer class="w-full border-t border-zinc-900 py-6 text-center text-xs text-zinc-600">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p>© <span id="year"></span> secure-auth-system. Enterprise Grade Infrastructure.</p>
-            <div class="flex gap-4">
-                <a href="#" class="hover:text-zinc-400 transition">Security Policy</a>
-                <a href="#" class="hover:text-zinc-400 transition">Telemetry</a>
-            </div>
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="site-footer__inner">
+            <span class="site-footer__copy">&copy; <span id="year"></span> secure-auth-system. All rights reserved.</span>
+            <ul class="site-footer__links">
+                <li><a href="#">Documentation</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+                <li><a href="#">Terms of Service</a></li>
+            </ul>
         </div>
     </footer>
 
@@ -156,10 +110,16 @@
             const secret = '{{ secret }}';
             navigator.clipboard.writeText(secret).then(() => {
                 const btn = document.getElementById('copyText');
-                btn.textContent = 'Copied! ✓';
-                setTimeout(() => {
-                    btn.textContent = 'Copy Key';
-                }, 2500);
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied';
+                setTimeout(() => { btn.textContent = originalText; }, 2500);
+            }).catch(() => {
+                // fallback: select the text
+                const el = document.getElementById('secretKey');
+                const range = document.createRange();
+                range.selectNodeContents(el);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
             });
         }
     </script>

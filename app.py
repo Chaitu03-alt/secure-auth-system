@@ -12,6 +12,7 @@ Architectural Highlights:
 
 import base64
 import hashlib
+import hmac
 import io
 import logging
 import os
@@ -19,14 +20,17 @@ import re
 import secrets
 import smtplib
 import sys
+import time
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from email.mime.text import MIMEText
+from typing import Optional
+from urllib.parse import urlsplit
 
 import bcrypt
-from cryptography.fernet import Fernet, InvalidToken
+from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFError, CSRFProtect
@@ -69,6 +73,59 @@ if _secret_key in (
     raise RuntimeError("FATAL: Insecure placeholder SECRET_KEY detected from repository history. Please generate a new key.")
 
 app = Flask(__name__)
+# --- Host Security & Allowed Hosts ---
+def _load_public_base_url() -> str:
+    raw = os.environ.get("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if not raw:
+        raise RuntimeError("FATAL: PUBLIC_BASE_URL is required.")
+    p = urlsplit(raw)
+    return f"{p.scheme}://{p.netloc}"
+
+PUBLIC_BASE_URL = _load_public_base_url()
+ALLOWED_HOSTS = {
+    h.strip().lower()
+    for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h.strip()
+} or {urlsplit(PUBLIC_BASE_URL).netloc.lower()}
+
+@app.before_request
+def enforce_trusted_host():
+    """Defense in depth: reject any request whose Host is not in allowlist."""
+    if request.host.lower() not in ALLOWED_HOSTS:
+        logger.warning("Rejected request with untrusted Host: %r", request.host)
+        abort(400)
+
+def build_reset_link(raw_token: str) -> str:
+    return f"{PUBLIC_BASE_URL}{url_for('reset_password', token=raw_token)}"
+
+# --- MultiFernet Fail-Closed TOTP Encryption ---
+class TOTPCryptoError(Exception):
+    pass
+
+def _load_fernet() -> MultiFernet:
+    raw = os.environ.get("TOTP_ENCRYPTION_KEY", "").strip()
+    if not raw:
+        raise RuntimeError("FATAL: TOTP_ENCRYPTION_KEY is required.")
+    try:
+        return MultiFernet([Fernet(k.strip().encode()) for k in raw.split(",") if k.strip()])
+    except Exception as exc:
+        raise RuntimeError("FATAL: TOTP_ENCRYPTION_KEY contains an invalid Fernet key.") from exc
+
+fernet = _load_fernet()
+
+def encrypt_totp_secret(plain_secret: str) -> str:
+    if not plain_secret:
+        raise TOTPCryptoError("Refusing to encrypt empty secret.")
+    return fernet.encrypt(plain_secret.encode("utf-8")).decode("ascii")
+
+def decrypt_totp_secret(ciphertext: str) -> str:
+    if not ciphertext:
+        raise TOTPCryptoError("Missing ciphertext.")
+    try:
+        return fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+    except InvalidToken as exc:
+        raise TOTPCryptoError("Decryption failed.") from exc
+    except Exception as exc:
+        raise TOTPCryptoError("Malformed TOTP ciphertext.") from exc
 app.config.update(
     SECRET_KEY=_secret_key,
     WTF_CSRF_ENABLED=True,
@@ -285,7 +342,72 @@ def _render_error(title: str, msg: str, code: int, retry_after: str = None):
     """DRY error template renderer."""
     return render_template("error.html", error_title=title, error_message=msg, retry_after=retry_after), code
 
+# --- Rate-Limiting Throttles & Anti-Replay TOTP ---
+TOTP_WINDOW = 1  # ±1 step (~90s acceptance)
 
+_THROTTLES = {
+    "otp": {"counter": "failed_attempts",    "lock": "locked_until",    "max": 3,  "seconds": 300},
+    "pw":  {"counter": "pw_failed_attempts", "lock": "pw_locked_until", "max": 10, "seconds": 900},
+}
+
+def match_step(secret: str, otp: str, window: int = TOTP_WINDOW, now: Optional[float] = None) -> Optional[int]:
+    otp = "".join((otp or "").split())
+    totp = pyotp.TOTP(secret)
+    if len(otp) != totp.digits or not (otp.isascii() and otp.isdigit()):
+        return None
+
+    now_step = int((time.time() if now is None else now) // totp.interval)
+    candidate = otp.encode("ascii")
+    matched: Optional[int] = None
+    for step in range(now_step - window, now_step + window + 1):
+        expected = totp.generate_otp(step).encode("ascii")
+        if hmac.compare_digest(expected, candidate):
+            matched = step
+    return matched
+
+def claim_totp_step(cur, user_id: int, step: int) -> bool:
+    cur.execute(
+        "UPDATE users "
+        "SET last_totp_timestep = %s, failed_attempts = 0, locked_until = NULL, "
+        "    is_totp_enabled = TRUE "
+        "WHERE id = %s AND (last_totp_timestep IS NULL OR last_totp_timestep < %s)",
+        (step, user_id, step),
+    )
+    return cur.rowcount == 1
+
+def reserve_attempt(user_id: int, stage: str) -> Optional[int]:
+    t = _THROTTLES[stage]
+    c, l = t["counter"], t["lock"]
+    with db_cursor(commit=True) as cur:
+        cur.execute(
+            f"UPDATE users SET {c} = 0, {l} = NULL WHERE id = %s AND "
+            f"(({l} IS NOT NULL AND {l} <= UTC_TIMESTAMP()) OR ({l} IS NULL AND {c} >= %s))",
+            (user_id, t["max"]),
+        )
+        cur.execute(
+            f"UPDATE users SET {c} = {c} + 1 "
+            f"WHERE id = %s AND {l} IS NULL AND {c} < %s",
+            (user_id, t["max"]),
+        )
+        if cur.rowcount != 1:
+            return None
+        cur.execute(f"SELECT {c} AS n FROM users WHERE id = %s", (user_id,))
+        used = int(cur.fetchone()["n"])
+        if used >= t["max"]:
+            cur.execute(
+                f"UPDATE users SET {l} = UTC_TIMESTAMP() + INTERVAL %s SECOND "
+                f"WHERE id = %s AND {l} IS NULL",
+                (t["seconds"], user_id),
+            )
+        return used
+
+def reset_attempts(user_id: int, stage: str) -> None:
+    t = _THROTTLES[stage]
+    with db_cursor(commit=True) as cur:
+        cur.execute(
+            f"UPDATE users SET {t['counter']} = 0, {t['lock']} = NULL WHERE id = %s",
+            (user_id,),
+        )
 # -----------------------------------------------------------------------------
 # Global Security Error Handlers
 # -----------------------------------------------------------------------------
@@ -487,85 +609,86 @@ def loginsubmit():
 @app.route("/verify-otp", methods=["GET", "POST"])
 @limiter.limit("5 per minute")
 def verify_otp():
-    """Two-Factor Authentication (TOTP) endpoint with server-side 3-strike lock and anti-replay."""
     pending_id = session.get("pending_user_id")
     pending_user = session.get("pending_user")
-
     if not (pending_id and pending_user):
         flash("Please enter your username and password first to access Two-Factor Verification.", "warning")
         return redirect(url_for("login"))
-
-    user = None
-    try:
-        with db_cursor() as cur:
-            cur.execute(
-                "SELECT id, username, totp_secret, session_version, last_totp_timestep, failed_attempts, locked_until "
-                "FROM users WHERE id = %s",
-                (pending_id,),
-            )
-            user = cur.fetchone()
-    except Exception as err:
-        logger.error("DB error during OTP verify: %s", err)
-
-    if not user:
-        session.clear()
-        return redirect(url_for("login"))
-
-    now = datetime.utcnow()
-    # Check if account is locked server-side
-    locked_until = user.get("locked_until")
-    if locked_until:
-        if isinstance(locked_until, str):
-            try:
-                locked_until = datetime.fromisoformat(locked_until)
-            except Exception:
-                locked_until = None
-        if locked_until and locked_until > now:
-            session.clear()
-            flash("Account is temporarily locked due to excessive failed attempts. Please try again in 5 minutes.", "danger")
-            return redirect(url_for("login"))
 
     if request.method == "GET":
         return render_template("verify_otp.html", username=pending_user)
 
     client_ip = get_client_ip()
-    otp = request.form.get("otp", "").strip()
+    otp = request.form.get("otp", "")
 
-    raw_secret = decrypt_totp_secret(user["totp_secret"]) if user.get("totp_secret") else None
-    if raw_secret:
-        totp_obj = pyotp.TOTP(raw_secret)
-        current_timestep = totp_obj.timecode(now)
-        if totp_obj.verify(otp, valid_window=1):
-            # Anti-replay: verify timestep has not already been used
-            last_ts = user.get("last_totp_timestep")
-            if last_ts is not None and last_ts >= current_timestep:
-                log_login_event(user["id"], client_ip, "OTP_REPLAY_REJECTED")
-                return render_template(
-                    "verify_otp.html",
-                    username=pending_user,
-                    msg="This verification code has already been used. Please wait for the next 30-second token on your authenticator app.",
-                )
+    try:
+        used = reserve_attempt(pending_id, "otp")
+    except Exception:
+        logger.exception("OTP attempt reservation failed")
+        return render_template("error.html", title="Service Unavailable", msg="We couldn't process your request. Please try again shortly."), 503
 
-            # Success: reset failed attempts, record consumed timestep, promote session
-            try:
-                with db_cursor(commit=True) as cur:
-                    cur.execute(
-                        "UPDATE users SET is_totp_enabled = TRUE, last_totp_timestep = %s, failed_attempts = 0, locked_until = NULL WHERE id = %s",
-                        (current_timestep, user["id"]),
-                    )
-            except Exception as exc:
-                logger.warning("Could not update TOTP state on success: %s", exc)
+    if used is None:
+        log_login_event(pending_id, client_ip, "OTP_LOCKED")
+        session.clear()
+        flash("Account is temporarily locked due to excessive failed attempts. Please try again in 5 minutes.", "danger")
+        return redirect(url_for("login"))
 
+    remaining = _THROTTLES["otp"]["max"] - used
+
+    try:
+        with db_cursor() as cur:
+            cur.execute(
+                "SELECT id, username, totp_secret, session_version FROM users WHERE id = %s",
+                (pending_id,),
+            )
+            user = cur.fetchone()
+        if not user:
             session.clear()
-            session.permanent = True
-            session["user_id"] = user["id"]
-            session["user"] = user["username"]
-            session["session_version"] = user.get("session_version", 1)
+            return redirect(url_for("login"))
+        step = match_step(decrypt_totp_secret(user["totp_secret"]), otp)
+    except TOTPCryptoError:
+        logger.critical("TOTP seed for user_id=%s failed decryption.", pending_id)
+        return render_template("error.html", title="Authentication Unavailable", msg="Two-factor verification is unavailable for this account. Please contact support."), 500
+    except Exception:
+        logger.exception("OTP verification error")
+        return render_template("error.html", title="Service Unavailable", msg="We couldn't process your request. Please try again shortly."), 503
 
-            log_login_event(user["id"], client_ip, "SUCCESS")
-            flash(f"Welcome back, {user['username']}! You have signed in securely.", "success")
-            return redirect(url_for("dashboard"))
+    if step is None:
+        log_login_event(pending_id, client_ip, "OTP_FAILED")
+        if remaining <= 0:
+            session.clear()
+            flash("Maximum verification attempts exceeded. For your protection, please sign in again.", "danger")
+            return redirect(url_for("login"))
+        return render_template(
+            "verify_otp.html",
+            username=pending_user,
+            msg=f"Incorrect authentication code. You have {remaining} attempt{'s' if remaining != 1 else ''} remaining.",
+        )
 
+    try:
+        with db_cursor(commit=True) as cur:
+            claimed = claim_totp_step(cur, user["id"], step)
+    except Exception:
+        logger.exception("TOTP step claim failed")
+        return render_template("error.html", title="Service Unavailable", msg="We couldn't process your request. Please try again shortly."), 503
+
+    if not claimed:
+        log_login_event(user["id"], client_ip, "OTP_REPLAY_REJECTED")
+        return render_template(
+            "verify_otp.html",
+            username=pending_user,
+            msg="This verification code has already been used. Please wait for the next 30-second code.",
+        )
+
+    session.clear()
+    session.permanent = True
+    session["user_id"] = user["id"]
+    session["user"] = user["username"]
+    session["session_version"] = user.get("session_version", 1)
+    log_login_event(user["id"], client_ip, "SUCCESS")
+    flash(f"Welcome back, {user['username']}! You have signed in securely.", "success")
+    return redirect(url_for("dashboard"))
+    
     # Invalid OTP Handling with server-side attempt tracking
     log_login_event(pending_id, client_ip, "OTP_FAILED")
     new_failed = (user.get("failed_attempts") or 0) + 1

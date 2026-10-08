@@ -1,12 +1,11 @@
 # secure-auth-system
 
+**Live demo:** http://16.4.53.85:5000  
+*(Demo only, plain HTTP. Please use a throwaway password, not a real one. Hosted on a single EC2 instance, so it may occasionally be offline.)*
+
 > **Hardened Reference Implementation of Multi-Factor Authentication & Session Security in Flask & Python.**
 
-[![Tests](https://img.shields.io/badge/tests-16%20passed-emerald)](tests/)
-[![Security Headers](https://img.shields.io/badge/security-CSP%20%7C%20HSTS%20%7C%20SameSite-blue)](#security-architecture)
-[![Audit](https://img.shields.io/badge/pip--audit-0%20vulnerabilities-success)](#dependency-audit)
-
-A production-grade reference implementation demonstrating defense-in-depth authentication principles in Python/Flask with MySQL. Built following OWASP Top 10 recommendations and verified through adversarial red-team penetration testing.
+A production-grade reference implementation demonstrating defense-in-depth authentication principles in Python/Flask with MySQL. Built following OWASP Top 10 recommendations and verified through adversarial red-team penetration testing concepts.
 
 ---
 
@@ -39,12 +38,11 @@ A production-grade reference implementation demonstrating defense-in-depth authe
 ### 5. HTTP Security Headers
 Every HTTP response is injected with strict security headers:
 - `Content-Security-Policy (CSP)`
-- `Strict-Transport-Security (HSTS)`: `max-age=31536000; includeSubDomains`
+- `Strict-Transport-Security (HSTS)`
 - `X-Frame-Options`: `DENY` (Clickjacking defense)
 - `X-Content-Type-Options`: `nosniff` (MIME sniffing defense)
 - `Referrer-Policy`: `strict-origin-when-cross-origin`
 - `Permissions-Policy`: `geolocation=(), camera=(), microphone=()`
-- Identifying `Server` banners (Werkzeug) are stripped from response headers.
 
 ---
 
@@ -63,62 +61,8 @@ To maintain technical accuracy, the following items are explicitly **not** imple
 - Python 3.10+
 - MySQL 8.0+
 
-### Installation
+### Installation & Run
 1. **Clone repository:**
    ```bash
-   git clone https://github.com/Chaitu03-alt/secure-auth-system.git
+   git clone [https://github.com/Chaitu03-alt/secure-auth-system.git](https://github.com/Chaitu03-alt/secure-auth-system.git)
    cd secure-auth-system
-   ```
-
-2. **Create virtual environment:**
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .\.venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
-
-3. **Configure Environment:**
-   Copy `.env.example` to `.env` and provide required secrets:
-   ```env
-   SECRET_KEY=<at-least-32-character-random-hex-string>
-   TOTP_ENCRYPTION_KEY=<fernet-base64-key-from-Fernet.generate_key()>
-   DB_HOST=localhost
-   DB_PORT=3306
-   DB_USER=root
-   DB_PASSWORD=<your-mysql-password>
-   DB_NAME=secure_auth_system
-   SESSION_COOKIE_SECURE=True
-   FLASK_DEBUG=False
-   ```
-
-4. **Initialize Database Schema:**
-   ```bash
-   mysql -u root -p secure_auth_system < database/schema.sql
-   ```
-
-5. **Run Test Suite:**
-   ```bash
-   pytest
-   ```
-
-6. **Start Application:**
-   ```bash
-   python app.py
-   ```
-
----
-
-## Security Verification & Auditing
-
-- **Automated Tests:** 16 comprehensive unit and integration tests passing (`tests/test_auth.py`).
-- **Dependency Audit:** Zero known vulnerabilities reported by `pip-audit`:
-  ```bash
-  pip-audit -r requirements.txt
-  # Output: No known vulnerabilities found
-  ```
-- **Red-Team PoC Suite:** All adversarial attack scripts in `redteam/poc/` verified to fail against the hardened endpoints. Detailed audit logs and verification records are documented in `redteam/05_fix_verification.md`.
-
----
-
-## License
-MIT License. Open for educational and reference usage.

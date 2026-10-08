@@ -117,15 +117,33 @@ def encrypt_totp_secret(plain_secret: str) -> str:
         raise TOTPCryptoError("Refusing to encrypt empty secret.")
     return fernet.encrypt(plain_secret.encode("utf-8")).decode("ascii")
 
+def normalize_b32(s: str) -> str:
+    """Strip whitespace and enforce uppercase Base32 padding."""
+    s = s.strip().upper().replace(" ", "")
+    # Agar legacy salt prefix (e.g. salt$secret) bacha ho:
+    if "$" in s:
+        s = s.split("$")[-1]
+    missing_padding = len(s) % 8
+    if missing_padding:
+        s += "=" * (8 - missing_padding)
+    return s
+
 def decrypt_totp_secret(ciphertext: str) -> str:
     if not ciphertext:
         raise TOTPCryptoError("Missing ciphertext.")
+    # Try Fernet decryption first
     try:
-        return fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
-    except InvalidToken as exc:
-        raise TOTPCryptoError("Decryption failed.") from exc
-    except Exception as exc:
-        raise TOTPCryptoError("Malformed TOTP ciphertext.") from exc
+        decrypted = fernet.decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+        return normalize_b32(decrypted)
+    except (InvalidToken, Exception):
+        # Fallback for un-migrated / legacy plaintext Base32 seeds
+        cleaned = normalize_b32(ciphertext)
+        try:
+            base64.b32decode(cleaned, casefold=True)
+            return cleaned
+        except Exception as exc:
+            logger.critical("Failed to decrypt or decode TOTP secret: %s", exc)
+            raise TOTPCryptoError("Decryption and Base32 fallback failed.") from exc
 app.config.update(
     SECRET_KEY=_secret_key,
     WTF_CSRF_ENABLED=True,
@@ -688,7 +706,7 @@ def verify_otp():
     log_login_event(user["id"], client_ip, "SUCCESS")
     flash(f"Welcome back, {user['username']}! You have signed in securely.", "success")
     return redirect(url_for("dashboard"))
-    
+
     # Invalid OTP Handling with server-side attempt tracking
     log_login_event(pending_id, client_ip, "OTP_FAILED")
     new_failed = (user.get("failed_attempts") or 0) + 1

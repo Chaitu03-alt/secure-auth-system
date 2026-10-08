@@ -398,13 +398,16 @@ def claim_totp_step(cur, user_id: int, step: int) -> bool:
     return cur.rowcount == 1
 
 def reserve_attempt(user_id: int, stage: str) -> Optional[int]:
+    from datetime import datetime, timezone, timedelta
     t = _THROTTLES[stage]
     c, l = t["counter"], t["lock"]
+    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    lock_until = (datetime.now(timezone.utc) + timedelta(seconds=t["seconds"])).strftime("%Y-%m-%d %H:%M:%S")
     with db_cursor(commit=True) as cur:
         cur.execute(
             f"UPDATE users SET {c} = 0, {l} = NULL WHERE id = %s AND "
-            f"(({l} IS NOT NULL AND {l} <= UTC_TIMESTAMP()) OR ({l} IS NULL AND {c} >= %s))",
-            (user_id, t["max"]),
+            f"(({l} IS NOT NULL AND {l} <= %s) OR ({l} IS NULL AND {c} >= %s))",
+            (user_id, now_utc, t["max"]),
         )
         cur.execute(
             f"UPDATE users SET {c} = {c} + 1 "
@@ -417,9 +420,8 @@ def reserve_attempt(user_id: int, stage: str) -> Optional[int]:
         used = int(cur.fetchone()["n"])
         if used >= t["max"]:
             cur.execute(
-                f"UPDATE users SET {l} = UTC_TIMESTAMP() + INTERVAL %s SECOND "
-                f"WHERE id = %s AND {l} IS NULL",
-                (t["seconds"], user_id),
+                f"UPDATE users SET {l} = %s WHERE id = %s AND {l} IS NULL",
+                (lock_until, user_id),
             )
         return used
 

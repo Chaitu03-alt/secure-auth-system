@@ -17,7 +17,8 @@
             <a href="/" class="brand-link">
                 <span class="brand-icon">
                     <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </span>
                 secure-auth
@@ -36,10 +37,12 @@
                 <!-- Left: OTP Form -->
                 <div class="auth-split__form">
                     <div style="margin-bottom:1.5rem;">
-                        <h1 style="font-size:1.125rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">Two-Factor Authentication</h1>
+                        <h1 style="font-size:1.125rem;font-weight:600;color:var(--text-primary);margin-bottom:0.5rem;">
+                            Two-Factor Authentication</h1>
                         <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;">
                             <span style="color:var(--text-secondary);">Verifying identity for:</span>
-                            <code style="font-family:var(--font-mono);font-size:0.8125rem;font-weight:600;color:var(--text-primary);background:var(--bg-canvas);padding:0.125rem 0.5rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);">{{ username }}</code>
+                            <code
+                                style="font-family:var(--font-mono);font-size:0.8125rem;font-weight:600;color:var(--text-primary);background:var(--bg-canvas);padding:0.125rem 0.5rem;border:1px solid var(--border-default);border-radius:var(--radius-sm);">{{ username }}</code>
                         </div>
                     </div>
 
@@ -47,9 +50,12 @@
                     {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                     {% for category, message in messages %}
-                    <div class="alert alert-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }}" style="margin-bottom:1rem;">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;margin-top:1px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div class="alert alert-{{ 'success' if category == 'success' else ('warning' if category == 'warning' else 'danger') }}"
+                        style="margin-bottom:1rem;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            style="flex-shrink:0;margin-top:1px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>{{ message }}</span>
                     </div>
@@ -59,37 +65,48 @@
 
                     {% if msg %}
                     <div class="alert alert-danger" style="margin-bottom:1rem;">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="flex-shrink:0;margin-top:1px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            style="flex-shrink:0;margin-top:1px;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <span>{{ msg }}</span>
                     </div>
                     {% endif %}
 
                     <!-- OTP Form -->
-                    <form action="/verify-otp" method="POST" style="display:flex;flex-direction:column;gap:1.25rem;" aria-label="Two-factor authentication form">
+                    <form action="/verify-otp" method="POST" style="display:flex;flex-direction:column;gap:1.25rem;"
+                        aria-label="Two-factor authentication form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <input type="hidden" name="username" value="{{ username }}">
 
                         <div class="form-group">
-                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.375rem;">
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.375rem;">
                                 <label for="otp" style="margin-bottom:0;">6-digit authenticator code</label>
-                                <span style="font-size:0.6875rem;font-family:var(--font-mono);color:var(--text-muted);">Refreshes every 30s</span>
+                                <span
+                                    style="font-size:0.6875rem;font-family:var(--font-mono);color:var(--text-muted);"><span>Refreshes
+                                        in <strong id="totp-timer"
+                                            class="text-emerald-400 font-mono">30</strong>s</span></span>
                             </div>
                             <input id="otp" name="otp" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="8"
                                 placeholder="000000" required autocomplete="one-time-code" autofocus
                                 class="form-input otp-input">
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="width:100%;padding:0.5rem 1rem;font-size:0.875rem;justify-content:center;">
+                        <button type="submit" class="btn btn-primary"
+                            style="width:100%;padding:0.5rem 1rem;font-size:0.875rem;justify-content:center;">
                             Verify and Sign In
                         </button>
                     </form>
 
-                    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
-                        <a href="/login" style="color:var(--text-secondary);display:flex;align-items:center;gap:0.375rem;">
+                    <div
+                        style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-default);display:flex;justify-content:space-between;align-items:center;font-size:0.75rem;">
+                        <a href="/login"
+                            style="color:var(--text-secondary);display:flex;align-items:center;gap:0.375rem;">
                             <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
                             Back to Sign In
                         </a>
@@ -99,34 +116,40 @@
 
                 <!-- Right: TOTP Info -->
                 <div class="auth-split__meta">
-                    <h3 style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">Verification Details</h3>
+                    <h3
+                        style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1rem;">
+                        Verification Details</h3>
                     <ul class="spec-list">
                         <li class="spec-item">
                             <div class="spec-item__title">
                                 <span class="spec-dot spec-dot--green"></span>
                                 Replay Protection
                             </div>
-                            <div class="spec-item__desc">Each 6-digit code is single-use. Codes are invalidated immediately after consumption.</div>
+                            <div class="spec-item__desc">Each 6-digit code is single-use. Codes are invalidated
+                                immediately after consumption.</div>
                         </li>
                         <li class="spec-item">
                             <div class="spec-item__title">
                                 <span class="spec-dot spec-dot--blue"></span>
                                 Clock Drift Tolerance
                             </div>
-                            <div class="spec-item__desc">A tolerance of ±1 time window (30 seconds) is allowed to account for minor clock skew between devices.</div>
+                            <div class="spec-item__desc">A tolerance of ±1 time window (30 seconds) is allowed to
+                                account for minor clock skew between devices.</div>
                         </li>
                         <li class="spec-item">
                             <div class="spec-item__title">
                                 <span class="spec-dot spec-dot--amber"></span>
                                 Lockout on Repeated Failures
                             </div>
-                            <div class="spec-item__desc">Repeated failed verification attempts trigger a server-side lockout to prevent automated attacks.</div>
+                            <div class="spec-item__desc">Repeated failed verification attempts trigger a server-side
+                                lockout to prevent automated attacks.</div>
                         </li>
                     </ul>
 
                     <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border-default);">
                         <p style="font-size:0.75rem;color:var(--text-muted);">
-                            Algorithm: <code style="font-family:var(--font-mono);color:var(--text-secondary);">HMAC-SHA1 / RFC 6238</code>
+                            Algorithm: <code
+                                style="font-family:var(--font-mono);color:var(--text-secondary);">HMAC-SHA1 / RFC 6238</code>
                         </p>
                     </div>
                 </div>
@@ -138,7 +161,8 @@
     <!-- Footer -->
     <footer class="site-footer">
         <div class="site-footer__inner">
-            <span class="site-footer__copy">&copy; <span id="year"></span> secure-auth-system. All rights reserved.</span>
+            <span class="site-footer__copy">&copy; <span id="year"></span> secure-auth-system. All rights
+                reserved.</span>
             <ul class="site-footer__links">
                 <li><a href="#">Documentation</a></li>
                 <li><a href="#">Privacy Policy</a></li>
@@ -149,6 +173,26 @@
 
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+    <script>
+        (function () {
+            function updateTotpTimer() {
+                const epochSeconds = Math.floor(Date.now() / 1000);
+                const remaining = 30 - (epochSeconds % 30);
+                const timerEl = document.getElementById("totp-timer");
+                if (timerEl) {
+                    timerEl.textContent = remaining;
+                    // Agar 5 second se kam bache ho toh warning color
+                    if (remaining <= 5) {
+                        timerEl.className = "text-rose-400 font-mono font-bold";
+                    } else {
+                        timerEl.className = "text-emerald-400 font-mono";
+                    }
+                }
+            }
+            updateTotpTimer();
+            setInterval(updateTotpTimer, 1000);
+        })();
     </script>
 </body>
 
